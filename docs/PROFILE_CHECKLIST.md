@@ -4,7 +4,7 @@ This repository is public, documented, tested in CI, and ready to share.
 
 Manual GitHub profile steps:
 
-1. Open the GitHub profile customization page.
+1. Open GitHub's profile pinning flow: https://docs.github.com/en/account-and-profile/how-tos/profile-customization/pinning-items-to-your-profile
 2. Pin `Fink692/quant-systems-lab`.
 3. Confirm the repository card shows the description and topics.
 4. Use the README, project brief, case study, and demo report as the review path.
