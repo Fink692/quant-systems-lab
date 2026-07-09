@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="520" viewBox="0 0 920 520" role="img">
+<style>
+    .title { font: 700 24px Arial, sans-serif; fill: #111827; }
+    .subtitle, .label, .legend { font: 14px Arial, sans-serif; fill: #374151; }
+    .tick { font: 12px Arial, sans-serif; fill: #4b5563; }
+    .axis { stroke: #111827; stroke-width: 1.4; }
+    .grid { stroke: #e5e7eb; stroke-width: 1; }
+    .series { fill: none; stroke-width: 2.6; stroke-linejoin: round; stroke-linecap: round; }
+    .bar { opacity: 0.9; }
+  </style>
+<text class="title" x="88" y="34">Factor Risk Contributions</text>
+<text class="subtitle" x="88" y="56">factor variance share 97.0%</text>
+<line class="axis" x1="88" x2="88" y1="72" y2="420" />
+<line class="axis" x1="88" x2="884" y1="420" y2="420" />
+<text class="label" x="486.0" y="476" text-anchor="middle">component</text>
+<text class="label" transform="translate(24 246.0) rotate(-90)" text-anchor="middle">variance contribution</text>
+<line class="grid" x1="88" x2="884" y1="420.0" y2="420.0" />
+<text class="tick" x="76" y="424.0" text-anchor="end">0</text>
+<line class="grid" x1="88" x2="884" y1="333.0" y2="333.0" />
+<text class="tick" x="76" y="337.0" text-anchor="end">1.6e-05</text>
+<line class="grid" x1="88" x2="884" y1="246.0" y2="246.0" />
+<text class="tick" x="76" y="250.0" text-anchor="end">3.3e-05</text>
+<line class="grid" x1="88" x2="884" y1="159.0" y2="159.0" />
+<text class="tick" x="76" y="163.0" text-anchor="end">4.9e-05</text>
+<line class="grid" x1="88" x2="884" y1="72.0" y2="72.0" />
+<text class="tick" x="76" y="76.0" text-anchor="end">6.6e-05</text>
+<rect class="bar" x="106.0" y="97.8" width="176.5" height="322.2" fill="#1f77b4" />
+<text class="tick" x="194.2" y="452" text-anchor="middle">F1</text>
+<rect class="bar" x="300.5" y="192.3" width="176.5" height="227.7" fill="#2ca02c" />
+<text class="tick" x="388.8" y="452" text-anchor="middle">F3</text>
+<rect class="bar" x="495.0" y="202.8" width="176.5" height="217.2" fill="#ff7f0e" />
+<text class="tick" x="583.2" y="452" text-anchor="middle">F2</text>
+<rect class="bar" x="689.5" y="396.0" width="176.5" height="24.0" fill="#9467bd" />
+<text class="tick" x="777.8" y="452" text-anchor="middle">Specific</text>
+</svg>

@@ -33,6 +33,9 @@ A tested Python quant-finance platform implementing ten advanced institutional m
 - Tests: `tests`
 - CLI: `quantlab demo-suite --seed 7`
 - Report generation: `quantlab demo-report --seed 7 --output examples/demo_report_seed7.md`
+- Visual artifacts: `python examples/generate_resume_artifacts.py --seed 7`
+- Case study: `docs/CASE_STUDY_MARKET_MAKING.md`
+- Real-data-compatible workflow: `examples/run_price_panel_example.py`
 - Current local verification: `168 passed`
 - Continuous integration: `.github/workflows/ci.yml`
 

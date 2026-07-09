@@ -85,7 +85,21 @@ GitHub Actions runs the same `pytest` suite on every push and pull request to `m
 ## Example Output
 
 - [Demo report, seed 7](examples/demo_report_seed7.md)
+- [Market-making case study](docs/CASE_STUDY_MARKET_MAKING.md)
+- [Real-data-compatible price panel workflow](docs/REAL_DATA_WORKFLOW.md)
+- [Interview prep notes](docs/INTERVIEW_PREP.md)
 - [Resume project brief](docs/PROJECT_BRIEF.md)
+- [GitHub profile checklist](docs/PROFILE_CHECKLIST.md)
+
+## Visual Artifacts
+
+These charts are generated from the package with `python examples/generate_resume_artifacts.py --seed 7`.
+
+![Queue-aware market-making PnL and inventory](examples/artifacts/market_making_pnl_inventory.svg)
+
+![Synthetic volatility surface slices](examples/artifacts/volatility_surface_slices.svg)
+
+![Factor risk contributions](examples/artifacts/factor_risk_contributions.svg)
 
 ## Resume Summary
 

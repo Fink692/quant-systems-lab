@@ -1,0 +1,87 @@
+# Interview Prep
+
+Use this as a quick prep sheet before sharing or discussing the repository.
+
+## Project Pitch
+
+Quant Systems Lab is a tested Python platform for advanced quantitative-finance systems. It implements derivatives pricing, volatility-surface diagnostics, queue-aware market making, risk-constrained RL trading, factor risk, robust portfolio optimization, statistical arbitrage, credit/default models, and systemic-risk contagion in one package with CLI workflows and automated tests.
+
+## Best 60-Second Explanation
+
+I built a research-grade quant-finance package that covers ten major modeling families. The goal was not to make a black-box trading bot, but to demonstrate that I can implement the mathematical and systems pieces behind institutional quant workflows: stochastic-volatility pricing and calibration, market-microstructure simulation, constrained RL, factor risk decomposition, robust portfolio construction, credit risk, stat arb, volatility-surface arbitrage, and contagion. The repo includes deterministic synthetic-data workflows, a CLI, generated reports, visual artifacts, and CI-tested coverage across the stack.
+
+## High-Value Talking Points
+
+- Heston/Bates use characteristic-function pricing and optimizer-based calibration against option quotes.
+- SABR/SVI/SSVI are used to construct smooth implied-volatility smiles and surfaces.
+- Surface arbitrage checks include calendar, butterfly, vertical, and price-bound violations.
+- The market maker has both a simple probabilistic simulator and a queue-aware limit-order-book simulator.
+- Queue-aware fills require market-order flow to consume resting depth before the agent receives execution.
+- RL environments include transaction costs, drawdown penalties, leverage controls, walk-forward validation, and constrained policy-gradient learning.
+- Factor risk includes OLS exposures, covariance reconstruction, style/sector/macro/cross-sectional factors, PCA, attribution, and rolling out-of-sample validation.
+- Portfolio optimizers include mean-variance, min variance, risk parity, CVaR, CDaR, Black-Litterman, Bayesian shrinkage, robust mean-variance, and turnover constraints.
+- Credit risk is modeled structurally with Merton/KMV and reduced-form with hazard curves, Cox/logistic models, CIR intensities, CDS pricing, copula losses, tranches, and CVA.
+- Systemic risk covers Eisenberg-Noe clearing, contagion, DebtRank, fire-sale feedback, liquidity spirals, scenario analysis, and Monte Carlo stress.
+
+## Likely Questions
+
+### Options And Volatility
+
+Q: Why include multiple volatility models?
+
+A: Different models answer different questions. Heston provides stochastic variance and characteristic-function pricing, Bates adds jumps for crash/skew behavior, SABR is useful for smile parameterization, and rough Bergomi captures rough-volatility behavior seen in short-dated skew scaling.
+
+Q: What proves a surface is usable?
+
+A: Smooth interpolation is not enough. The surface should avoid calendar arbitrage, butterfly arbitrage, vertical-spread violations, and price-bound violations. The repo includes diagnostics and constrained repair utilities for those checks.
+
+### Market Making
+
+Q: What is the gap between Avellaneda-Stoikov and a real order book?
+
+A: Avellaneda-Stoikov gives an optimal quoting policy under stylized assumptions. A real book adds tick sizes, queue priority, cancellations, market-order flow, latency, adverse selection, and inventory path dependence. The repo models that second layer explicitly.
+
+Q: Why does queue position matter?
+
+A: A quote at the best bid does not fill just because a sell market order arrives. Existing resting quantity at that price fills first. The simulator records queue-ahead depth and only credits the agent after that depth is consumed.
+
+### RL Trading
+
+Q: Why constrained policy gradient?
+
+A: Clipping actions after training is weaker than teaching the policy that drawdown and turnover violations have a cost. The Lagrangian trainer updates penalties based on observed violations, so constraints influence learning rather than only post-processing.
+
+Q: How do you avoid overfitting?
+
+A: The repo uses deterministic synthetic tests for correctness and walk-forward evaluation hooks for out-of-sample style testing. A production extension would add real market data, purged cross-validation, and transaction-cost calibration.
+
+### Factor Risk And Portfolio
+
+Q: What makes this Barra-style?
+
+A: It decomposes asset returns into factor exposures, factor covariance, and specific risk, then reconstructs covariance and attributes portfolio variance back to factors and assets. It also includes style, sector, macro, cross-sectional, and statistical PCA factors.
+
+Q: Why robust optimization?
+
+A: Mean-variance portfolios are fragile because expected returns are noisy. Robust and Bayesian methods shrink or penalize uncertain estimates so the optimizer is less dominated by estimation error.
+
+### Credit And Systemic Risk
+
+Q: Why both structural and reduced-form credit models?
+
+A: Structural models connect default to balance-sheet asset value and leverage. Reduced-form models treat default arrival as an intensity process and are more directly tied to credit spreads, survival curves, CDS pricing, and covariates.
+
+Q: What is systemic risk doing here?
+
+A: The systemic module treats financial institutions as a network of exposures and assets. It can model direct contagion, clearing defaults, capital shortfalls, fire-sale feedback, liquidity spirals, and Monte Carlo default probability under shocks.
+
+## Honest Limitations
+
+- The repository is a research platform, not a production trading system.
+- Most workflows use deterministic synthetic data so the project can be tested anywhere.
+- Live deployment would require market-data ingestion, execution adapters, calibration governance, model-risk documentation, and independent validation.
+- The visual artifacts are explanatory examples, not performance claims.
+
+## Strong Closing Line
+
+The value of the project is that it shows I can turn mathematical finance concepts into tested, modular software with reproducible workflows, not just describe the models at a whiteboard.
