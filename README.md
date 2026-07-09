@@ -9,9 +9,9 @@ The project is designed as resume/interview evidence for applied mathematical fi
 ## Why This Project Matters
 
 - Covers derivatives pricing, market microstructure, reinforcement learning, econometrics, credit modeling, network contagion, and convex-style portfolio construction.
-- Uses deterministic synthetic-data workflows so every major model family can be tested without depending on paid market data.
+- Uses deterministic synthetic-data workflows so every major model family can be tested without paid data, plus a real S&P 500 valuation-regime study with sourced market data.
 - Includes a CLI and report generator, making the package demonstrable from a terminal instead of only from isolated functions.
-- Ships with 168 tests covering model behavior, calibration routines, risk diagnostics, workflow integration, and CLI outputs.
+- Ships with 173 tests covering model behavior, calibration routines, risk diagnostics, workflow integration, real-data walk-forward research, and CLI outputs.
 
 ## System Coverage
 
@@ -44,6 +44,7 @@ src/quantlab/
   data/             Synthetic datasets and schema-checked loaders
   workflows/        End-to-end deterministic demo suite
   reporting/        Markdown report generation
+  research/         Real-data walk-forward allocation studies
 ```
 
 Tests live in `tests/` and are intentionally broad: most modules are exercised both directly and through workflow-level smoke tests.
@@ -72,12 +73,30 @@ quantlab data-demo --seed 7
 quantlab demo-report --seed 7 --output examples/demo_report_seed7.md
 ```
 
+## Real-Data Research Study
+
+The repo now includes a reproducible S&P 500 valuation-regime allocation study using the DataHub/Shiller monthly dataset.
+
+```powershell
+python examples/fetch_shiller_sp500_data.py --output data/real/shiller_sp500_monthly.csv
+python examples/run_valuation_regime_study.py --data data/real/shiller_sp500_monthly.csv --config config/valuation_regime.json --output reports/valuation_regime_study.md
+```
+
+Artifacts:
+
+- [Research memo](docs/RESEARCH_MEMO_VALUATION_REGIME.md)
+- [Generated tear sheet](reports/valuation_regime_study.md)
+- [Data source notes](docs/DATA_SOURCES.md)
+- [Hiring readiness audit](docs/HIRING_READINESS_AUDIT.md)
+
+The study uses train/validation/test walk-forward folds, lagged valuation signals, transaction costs, slippage, volatility targeting, drawdown controls, regime breakdowns, stress tests, and cost robustness checks. It is intentionally honest: the strategy improves risk-adjusted behavior and reduces beta in this sample, but does not beat buy-and-hold S&P 500 CAGR.
+
 ## Verification
 
 Current local verification:
 
 ```text
-168 passed
+173 passed
 ```
 
 GitHub Actions runs the same `pytest` suite on every push and pull request to `main`.
@@ -86,7 +105,10 @@ GitHub Actions runs the same `pytest` suite on every push and pull request to `m
 
 - [Demo report, seed 7](examples/demo_report_seed7.md)
 - [Market-making case study](docs/CASE_STUDY_MARKET_MAKING.md)
+- [Real-data valuation-regime study](docs/RESEARCH_MEMO_VALUATION_REGIME.md)
+- [Valuation-regime tear sheet](reports/valuation_regime_study.md)
 - [Real-data-compatible price panel workflow](docs/REAL_DATA_WORKFLOW.md)
+- [Hiring readiness audit](docs/HIRING_READINESS_AUDIT.md)
 - [Interview prep notes](docs/INTERVIEW_PREP.md)
 - [Resume project brief](docs/PROJECT_BRIEF.md)
 - [GitHub profile checklist](docs/PROFILE_CHECKLIST.md)
@@ -103,11 +125,11 @@ These charts are generated from the package with `python examples/generate_resum
 
 ## Resume Summary
 
-Built a tested Python quant-finance research platform covering stochastic-volatility options, market making, risk-constrained RL, Barra-style factor risk, robust portfolio optimization, credit/default modeling, statistical arbitrage, volatility-surface arbitrage, and systemic-risk contagion; packaged with CLI workflows, synthetic data validation, markdown reports, and 168 automated tests.
+Built a tested Python quant-finance research platform covering stochastic-volatility options, market making, risk-constrained RL, Barra-style factor risk, robust portfolio optimization, credit/default modeling, statistical arbitrage, volatility-surface arbitrage, systemic-risk contagion, and a real-data S&P 500 valuation-regime walk-forward study; packaged with CLI workflows, Docker/Make reproducibility, markdown reports, and 173 automated tests.
 
 ## Limitations and Next Extensions
 
-The repository is research-grade scaffolding using deterministic synthetic datasets. It is suitable for demonstrating model implementation, numerical methods, workflow design, and test discipline. Production deployment would require live data connectors, execution-system integration, parameter governance, model-risk documentation, and independent calibration validation against real market datasets.
+The repository is research-grade scaffolding with deterministic synthetic datasets for model correctness and one real-data allocation study for research workflow evidence. Production deployment would require live data connectors, execution-system integration, parameter governance, model-risk documentation, and independent calibration validation against broader real market datasets.
 
 ## License
 

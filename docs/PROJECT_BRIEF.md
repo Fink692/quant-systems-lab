@@ -2,7 +2,7 @@
 
 ## One-Line Pitch
 
-A tested Python quant-finance platform implementing ten advanced institutional modeling systems across derivatives, market microstructure, portfolio construction, risk, credit, statistical arbitrage, and systemic contagion.
+A tested Python quant-finance platform implementing ten advanced institutional modeling systems across derivatives, market microstructure, portfolio construction, risk, credit, statistical arbitrage, and systemic contagion, plus a real-data walk-forward valuation-regime study.
 
 ## What This Demonstrates
 
@@ -11,6 +11,7 @@ A tested Python quant-finance platform implementing ten advanced institutional m
 - Machine learning for trading: tabular Q-learning, neural Q-learning, policy-gradient training, Lagrangian risk constraints, walk-forward validation, and realistic transaction-cost/drawdown penalties.
 - Institutional risk analytics: Barra-style factor decomposition, covariance shrinkage, PCA/statistical factors, macro/style/sector factors, VaR/CVaR, Kupiec/Christoffersen validation, Basel traffic-light diagnostics.
 - Portfolio engineering: robust optimization, Black-Litterman, Bayesian return shrinkage, risk parity, risk budgeting, CVaR, CDaR, turnover constraints, stress testing, and rolling backtests.
+- Real-data research: sourced S&P 500/Shiller monthly data, train/validation/test walk-forward splits, transaction costs, slippage, volatility targeting, drawdown controls, tear sheet, robustness checks, and failure analysis.
 - System design: package layout, CLI workflows, deterministic synthetic data, schema validation, Markdown reporting, and broad automated tests.
 
 ## Technical Differentiators
@@ -27,21 +28,27 @@ A tested Python quant-finance platform implementing ten advanced institutional m
 4. Testable without paid data.
    Synthetic data generators create controlled option chains, price panels, factor panels, credit spread curves, cointegrated assets, and financial networks so the full package can be verified anywhere.
 
+5. Real-data research evidence.
+   `src/quantlab.research.valuation_regime` runs a reproducible S&P 500 valuation-regime allocation study with lagged CAPE/PE10 signals and honest out-of-sample reporting.
+
 ## Evidence of Completion
 
 - Package: `src/quantlab`
 - Tests: `tests`
 - CLI: `quantlab demo-suite --seed 7`
 - Report generation: `quantlab demo-report --seed 7 --output examples/demo_report_seed7.md`
+- Real-data study: `python examples/run_valuation_regime_study.py --data data/real/shiller_sp500_monthly.csv --config config/valuation_regime.json --output reports/valuation_regime_study.md`
 - Visual artifacts: `python examples/generate_resume_artifacts.py --seed 7`
 - Case study: `docs/CASE_STUDY_MARKET_MAKING.md`
 - Real-data-compatible workflow: `examples/run_price_panel_example.py`
-- Current local verification: `168 passed`
+- Research memo: `docs/RESEARCH_MEMO_VALUATION_REGIME.md`
+- Hiring readiness audit: `docs/HIRING_READINESS_AUDIT.md`
+- Current local verification: `173 passed`
 - Continuous integration: `.github/workflows/ci.yml`
 
 ## Resume Bullet
 
-Built Quant Systems Lab, a tested Python platform implementing stochastic-volatility options pricing, queue-aware market making, risk-constrained RL trading, Barra-style factor risk, robust portfolio optimization, credit/default models, statistical arbitrage, volatility-surface arbitrage, and systemic-risk contagion, with CLI workflows, Markdown reports, synthetic-data validation, and 168 automated tests.
+Built Quant Systems Lab, a tested Python platform implementing stochastic-volatility options pricing, queue-aware market making, risk-constrained RL trading, Barra-style factor risk, robust portfolio optimization, credit/default models, statistical arbitrage, volatility-surface arbitrage, systemic-risk contagion, and a real-data S&P 500 valuation-regime walk-forward study, with CLI workflows, Docker/Make reproducibility, Markdown reports, and 173 automated tests.
 
 ## Interview Talking Points
 
@@ -53,3 +60,4 @@ Built Quant Systems Lab, a tested Python platform implementing stochastic-volati
 - Why robust and Bayesian portfolio methods are included alongside mean-variance optimization.
 - How credit risk is modeled both structurally and with reduced-form intensities.
 - How network contagion, clearing, fire-sale feedback, and liquidity spirals describe different systemic-risk channels.
+- Why the real-data valuation-regime study is framed as a risk-managed allocation overlay rather than an overclaimed alpha strategy.

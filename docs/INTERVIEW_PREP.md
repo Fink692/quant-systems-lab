@@ -4,11 +4,11 @@ Use this as a quick prep sheet before sharing or discussing the repository.
 
 ## Project Pitch
 
-Quant Systems Lab is a tested Python platform for advanced quantitative-finance systems. It implements derivatives pricing, volatility-surface diagnostics, queue-aware market making, risk-constrained RL trading, factor risk, robust portfolio optimization, statistical arbitrage, credit/default models, and systemic-risk contagion in one package with CLI workflows and automated tests.
+Quant Systems Lab is a tested Python platform for advanced quantitative-finance systems. It implements derivatives pricing, volatility-surface diagnostics, queue-aware market making, risk-constrained RL trading, factor risk, robust portfolio optimization, statistical arbitrage, credit/default models, systemic-risk contagion, and a real-data S&P 500 valuation-regime study in one package with CLI workflows and automated tests.
 
 ## Best 60-Second Explanation
 
-I built a research-grade quant-finance package that covers ten major modeling families. The goal was not to make a black-box trading bot, but to demonstrate that I can implement the mathematical and systems pieces behind institutional quant workflows: stochastic-volatility pricing and calibration, market-microstructure simulation, constrained RL, factor risk decomposition, robust portfolio construction, credit risk, stat arb, volatility-surface arbitrage, and contagion. The repo includes deterministic synthetic-data workflows, a CLI, generated reports, visual artifacts, and CI-tested coverage across the stack.
+I built a research-grade quant-finance package that covers ten major modeling families plus a real-data allocation study. The goal was not to make a black-box trading bot, but to demonstrate that I can implement the mathematical and systems pieces behind institutional quant workflows: stochastic-volatility pricing and calibration, market-microstructure simulation, constrained RL, factor risk decomposition, robust portfolio construction, credit risk, stat arb, volatility-surface arbitrage, contagion, and walk-forward research with transaction costs. The repo includes deterministic synthetic-data workflows, a real S&P 500/Shiller valuation-regime study, generated reports, Docker/Make reproducibility, and CI-tested coverage across the stack.
 
 ## High-Value Talking Points
 
@@ -22,6 +22,7 @@ I built a research-grade quant-finance package that covers ten major modeling fa
 - Portfolio optimizers include mean-variance, min variance, risk parity, CVaR, CDaR, Black-Litterman, Bayesian shrinkage, robust mean-variance, and turnover constraints.
 - Credit risk is modeled structurally with Merton/KMV and reduced-form with hazard curves, Cox/logistic models, CIR intensities, CDS pricing, copula losses, tranches, and CVA.
 - Systemic risk covers Eisenberg-Noe clearing, contagion, DebtRank, fire-sale feedback, liquidity spirals, scenario analysis, and Monte Carlo stress.
+- The real-data study uses monthly S&P 500/Shiller data, lagged PE10 signals, train/validation/test walk-forward folds, transaction costs, volatility targeting, drawdown controls, a tear sheet, robustness checks, and failure analysis.
 
 ## Likely Questions
 
@@ -55,6 +56,10 @@ Q: How do you avoid overfitting?
 
 A: The repo uses deterministic synthetic tests for correctness and walk-forward evaluation hooks for out-of-sample style testing. A production extension would add real market data, purged cross-validation, and transaction-cost calibration.
 
+Q: What changed when you added real data?
+
+A: I added a separate S&P 500 valuation-regime study rather than retrofitting every synthetic test. It fetches sourced monthly Shiller/DataHub data, uses lagged CAPE/PE10 signals, chooses thresholds only inside each training/validation fold, deducts costs and slippage, and reports both the good and bad news: lower beta and better risk-adjusted behavior, but lower CAGR than buy-and-hold.
+
 ### Factor Risk And Portfolio
 
 Q: What makes this Barra-style?
@@ -79,9 +84,11 @@ A: The systemic module treats financial institutions as a network of exposures a
 
 - The repository is a research platform, not a production trading system.
 - Most workflows use deterministic synthetic data so the project can be tested anywhere.
+- The real-data valuation study is an index allocation proxy, not a directly tradable strategy without ETF/futures execution assumptions.
+- The study improves risk-adjusted behavior in the tested sample, but it does not beat buy-and-hold S&P 500 CAGR.
 - Live deployment would require market-data ingestion, execution adapters, calibration governance, model-risk documentation, and independent validation.
 - The visual artifacts are explanatory examples, not performance claims.
 
 ## Strong Closing Line
 
-The value of the project is that it shows I can turn mathematical finance concepts into tested, modular software with reproducible workflows, not just describe the models at a whiteboard.
+The value of the project is that it shows I can turn mathematical finance concepts into tested, modular software with reproducible workflows and honest research memos, not just describe the models at a whiteboard.
