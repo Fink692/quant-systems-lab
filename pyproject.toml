@@ -8,6 +8,19 @@ version = "0.1.0"
 description = "Research-grade scaffolding for advanced quant finance systems."
 readme = "README.md"
 requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "Fink692" }]
+keywords = ["quantitative-finance", "options", "risk-modeling", "portfolio-optimization", "market-making"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Financial and Insurance Industry",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Office/Business :: Financial :: Investment",
+    "Topic :: Scientific/Engineering :: Mathematics",
+]
 dependencies = [
     "numpy>=1.26",
     "pandas>=2.0",
@@ -18,6 +31,10 @@ dependencies = [
 
 [project.scripts]
 quantlab = "quantlab.cli:main"
+
+[project.urls]
+Repository = "https://github.com/Fink692/quant-systems-lab"
+Issues = "https://github.com/Fink692/quant-systems-lab/issues"
 
 [project.optional-dependencies]
 dev = ["pytest>=8.0"]

@@ -57,6 +57,8 @@ def test_markdown_report_render_and_save(tmp_path):
     markdown = render_demo_markdown(result)
     assert markdown.startswith("# Quant Systems Lab Demo Report")
     assert "## Options" in markdown
+    assert "## RL Trading" in markdown
+    assert "**Book Final PnL**" in markdown
     path = save_demo_report(result, tmp_path / "reports" / "demo.md")
     assert path.exists()
     assert path.read_text(encoding="utf-8") == markdown
