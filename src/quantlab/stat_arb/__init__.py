@@ -1,7 +1,7 @@
 """Statistical arbitrage diagnostics."""
 
-from quantlab.stat_arb.basket_backtest import JohansenBasketBacktestResult, backtest_johansen_basket_strategy
 from quantlab.stat_arb.backtest import SpreadBacktestResult, backtest_spread_strategy
+from quantlab.stat_arb.basket_backtest import JohansenBasketBacktestResult, backtest_johansen_basket_strategy
 from quantlab.stat_arb.cointegration import CointegrationResult, engle_granger, estimate_ou, zscore
 from quantlab.stat_arb.dynamic_backtest import DynamicHedgeBacktestResult, backtest_kalman_spread_strategy
 from quantlab.stat_arb.johansen import JohansenResult, basket_spread, johansen_hedge_vector, johansen_test

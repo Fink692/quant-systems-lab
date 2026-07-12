@@ -59,7 +59,12 @@ def calibrate_sabr_smile(
         gtol=1e-10,
     )
     return CalibrationResult(
-        parameters={"alpha": float(result.x[0]), "beta": float(beta), "rho": float(result.x[1]), "nu": float(result.x[2])},
+        parameters={
+            "alpha": float(result.x[0]),
+            "beta": float(beta),
+            "rho": float(result.x[1]),
+            "nu": float(result.x[2]),
+        },
         objective_value=float(np.sum(result.fun**2)),
         residuals=result.fun,
         success=bool(result.success),

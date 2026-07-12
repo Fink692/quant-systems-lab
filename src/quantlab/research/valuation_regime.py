@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass
 from pathlib import Path
+from statistics import NormalDist
 
 import numpy as np
 import pandas as pd
@@ -14,6 +16,7 @@ class ValuationRegimeConfig:
     train_months: int = 120
     validation_months: int = 36
     test_months: int = 36
+    minimum_test_months: int = 12
     step_months: int = 36
     cheap_percentiles: tuple[float, ...] = (0.25, 0.35, 0.45)
     expensive_percentiles: tuple[float, ...] = (0.65, 0.75, 0.85)
@@ -27,9 +30,22 @@ class ValuationRegimeConfig:
     transaction_cost_bps: float = 5.0
     slippage_bps: float = 2.0
     volatility_lookback: int = 12
+    bootstrap_replicates: int = 500
+    bootstrap_block_months: int = 12
+    random_seed: int = 12
 
     def validate(self) -> None:
-        if min(self.train_months, self.validation_months, self.test_months, self.step_months, self.volatility_lookback) <= 0:
+        if (
+            min(
+                self.train_months,
+                self.validation_months,
+                self.test_months,
+                self.minimum_test_months,
+                self.step_months,
+                self.volatility_lookback,
+            )
+            <= 0
+        ):
             raise ValueError("window lengths must be positive")
         if not all(0 < p < 1 for p in self.cheap_percentiles + self.expensive_percentiles):
             raise ValueError("percentiles must be in (0, 1)")
@@ -41,6 +57,8 @@ class ValuationRegimeConfig:
             raise ValueError("drawdown_limit must be in (0, 1)")
         if min(self.transaction_cost_bps, self.slippage_bps) < 0:
             raise ValueError("cost assumptions must be non-negative")
+        if min(self.bootstrap_replicates, self.bootstrap_block_months) <= 0:
+            raise ValueError("bootstrap settings must be positive")
 
 
 @dataclass(frozen=True)
@@ -66,11 +84,20 @@ class RobustnessResult:
 
 
 @dataclass(frozen=True)
+class ResearchDiagnostics:
+    baseline_comparison: pd.DataFrame
+    bootstrap_confidence_intervals: pd.DataFrame
+    parameter_stability: pd.DataFrame
+    overfitting_metrics: pd.Series
+
+
+@dataclass(frozen=True)
 class ValuationRegimeResult:
     history: pd.DataFrame
     folds: pd.DataFrame
     tear_sheet: TearSheet
     robustness: RobustnessResult
+    diagnostics: ResearchDiagnostics
     config: ValuationRegimeConfig
 
     @property
@@ -107,12 +134,16 @@ def run_valuation_regime_walk_forward(
     fold_rows: list[dict[str, float | pd.Timestamp]] = []
     test_histories: list[pd.DataFrame] = []
     start = 0
-    while start + cfg.train_months + cfg.validation_months + cfg.test_months <= len(prepared):
+    while start + cfg.train_months + cfg.validation_months + cfg.minimum_test_months <= len(prepared):
         train = prepared.iloc[start : start + cfg.train_months]
         validation = prepared.iloc[start + cfg.train_months : start + cfg.train_months + cfg.validation_months]
-        test = prepared.iloc[start + cfg.train_months + cfg.validation_months : start + cfg.train_months + cfg.validation_months + cfg.test_months]
+        test_start = start + cfg.train_months + cfg.validation_months
+        test = prepared.iloc[test_start : min(test_start + cfg.test_months, len(prepared))]
         params = _select_parameters(train, validation, cfg)
-        test_history = _run_strategy_window(test, cfg, params["cheap_threshold"], params["expensive_threshold"], initial_equity=1.0)
+        selection = _selection_diagnostics(train, validation, test, cfg, params)
+        test_history = _run_strategy_window(
+            test, cfg, params["cheap_threshold"], params["expensive_threshold"], initial_equity=1.0
+        )
         test_histories.append(test_history)
         fold_rows.append(
             {
@@ -124,8 +155,13 @@ def run_valuation_regime_walk_forward(
                 "test_end": test.index[-1],
                 "cheap_threshold": params["cheap_threshold"],
                 "expensive_threshold": params["expensive_threshold"],
+                "cheap_percentile": params["cheap_percentile"],
+                "expensive_percentile": params["expensive_percentile"],
                 "validation_sharpe": params["validation_sharpe"],
-                "test_return": float(test_history["strategy_equity"].iloc[-1] / test_history["strategy_equity"].iloc[0] - 1.0),
+                "selected_test_rank_percentile": selection["selected_test_rank_percentile"],
+                "test_return": float(
+                    test_history["strategy_equity"].iloc[-1] / test_history["strategy_equity"].iloc[0] - 1.0
+                ),
             }
         )
         start += cfg.step_months
@@ -133,10 +169,14 @@ def run_valuation_regime_walk_forward(
     stitched = _stitch_test_histories(test_histories)
     benchmark = prepared.reindex(stitched.index)
     stitched["benchmark_return"] = benchmark["market_return"]
+    stitched["benchmark_realized_volatility"] = benchmark["realized_volatility"]
+    stitched["bond_return"] = benchmark["bond_return"]
     stitched["benchmark_equity"] = (1.0 + stitched["benchmark_return"]).cumprod()
     tear_sheet = _build_tear_sheet(stitched)
     robustness = _run_robustness(prepared, cfg)
-    return ValuationRegimeResult(stitched, pd.DataFrame(fold_rows), tear_sheet, robustness, cfg)
+    folds = pd.DataFrame(fold_rows)
+    diagnostics = _build_research_diagnostics(stitched, folds, cfg)
+    return ValuationRegimeResult(stitched, folds, tear_sheet, robustness, diagnostics, cfg)
 
 
 def _prepare_monthly_market_data(data: pd.DataFrame) -> pd.DataFrame:
@@ -150,6 +190,8 @@ def _prepare_monthly_market_data(data: pd.DataFrame) -> pd.DataFrame:
     out = frame.loc[market_return.index, ["sp500", "pe10", "long_rate"]].copy()
     out["market_return"] = market_return
     out["risk_free_return"] = (out["long_rate"].shift(1).fillna(out["long_rate"]) / 100.0) / 12.0
+    yield_decimal = out["long_rate"] / 100.0
+    out["bond_return"] = out["risk_free_return"] - 7.0 * yield_decimal.diff().fillna(0.0)
     out["signal_pe10"] = out["pe10"].shift(1)
     out["realized_volatility"] = out["market_return"].shift(1).rolling(12).std(ddof=1) * np.sqrt(12.0)
     out = out.dropna(subset=["signal_pe10", "realized_volatility"])
@@ -165,17 +207,56 @@ def _select_parameters(train: pd.DataFrame, validation: pd.DataFrame, cfg: Valua
                 continue
             cheap_threshold = float(train_signal.quantile(cheap_pct))
             expensive_threshold = float(train_signal.quantile(expensive_pct))
-            validation_history = _run_strategy_window(validation, cfg, cheap_threshold, expensive_threshold, initial_equity=1.0)
+            validation_history = _run_strategy_window(
+                validation, cfg, cheap_threshold, expensive_threshold, initial_equity=1.0
+            )
             sharpe = _sharpe(validation_history["strategy_return"].to_numpy())
             if best is None or sharpe > best["validation_sharpe"]:
                 best = {
                     "cheap_threshold": cheap_threshold,
                     "expensive_threshold": expensive_threshold,
+                    "cheap_percentile": cheap_pct,
+                    "expensive_percentile": expensive_pct,
                     "validation_sharpe": sharpe,
                 }
     if best is None:
         raise ValueError("no valid threshold candidates")
     return best
+
+
+def _selection_diagnostics(
+    train: pd.DataFrame,
+    validation: pd.DataFrame,
+    test: pd.DataFrame,
+    cfg: ValuationRegimeConfig,
+    selected: dict[str, float],
+) -> dict[str, float]:
+    candidates = []
+    train_signal = train["signal_pe10"]
+    for cheap_pct in cfg.cheap_percentiles:
+        for expensive_pct in cfg.expensive_percentiles:
+            if cheap_pct >= expensive_pct:
+                continue
+            cheap_threshold = float(train_signal.quantile(cheap_pct))
+            expensive_threshold = float(train_signal.quantile(expensive_pct))
+            validation_history = _run_strategy_window(
+                validation, cfg, cheap_threshold, expensive_threshold, initial_equity=1.0
+            )
+            test_history = _run_strategy_window(test, cfg, cheap_threshold, expensive_threshold, initial_equity=1.0)
+            candidates.append(
+                {
+                    "cheap_percentile": cheap_pct,
+                    "expensive_percentile": expensive_pct,
+                    "validation_sharpe": _sharpe(validation_history["strategy_return"].to_numpy()),
+                    "test_sharpe": _sharpe(test_history["strategy_return"].to_numpy()),
+                }
+            )
+    grid = pd.DataFrame(candidates)
+    selected_mask = np.isclose(grid["cheap_percentile"], selected["cheap_percentile"]) & np.isclose(
+        grid["expensive_percentile"], selected["expensive_percentile"]
+    )
+    test_rank = grid["test_sharpe"].rank(method="average", pct=True)
+    return {"selected_test_rank_percentile": float(test_rank.loc[selected_mask].iloc[0])}
 
 
 def _run_strategy_window(
@@ -198,7 +279,9 @@ def _run_strategy_window(
         exposure = min(vol_scaled, cfg.derisk_exposure) if drawdown >= cfg.drawdown_limit else vol_scaled
         turnover = abs(exposure - previous_exposure)
         trading_cost = turnover * cost_rate
-        strategy_return = exposure * float(row["market_return"]) + (1.0 - exposure) * float(row["risk_free_return"]) - trading_cost
+        strategy_return = (
+            exposure * float(row["market_return"]) + (1.0 - exposure) * float(row["risk_free_return"]) - trading_cost
+        )
         equity *= 1.0 + strategy_return
         peak = max(peak, equity)
         rows.append(
@@ -220,7 +303,9 @@ def _run_strategy_window(
     return pd.DataFrame(rows).set_index("date")
 
 
-def _valuation_exposure(pe10: float, cheap_threshold: float, expensive_threshold: float, cfg: ValuationRegimeConfig) -> float:
+def _valuation_exposure(
+    pe10: float, cheap_threshold: float, expensive_threshold: float, cfg: ValuationRegimeConfig
+) -> float:
     if pe10 <= cheap_threshold:
         return cfg.cheap_exposure
     if pe10 >= expensive_threshold:
@@ -268,15 +353,145 @@ def _build_tear_sheet(history: pd.DataFrame) -> TearSheet:
     monthly["year"] = monthly.index.year
     monthly["month"] = monthly.index.month
     monthly_returns = monthly.pivot_table(index="year", columns="month", values="strategy_return", aggfunc="sum")
-    regime_breakdown = history.assign(regime=_regime_labels(history["signal_pe10"])).groupby("regime").agg(
-        observations=("strategy_return", "count"),
-        average_return=("strategy_return", "mean"),
-        volatility=("strategy_return", "std"),
-        average_exposure=("exposure", "mean"),
-        hit_rate=("strategy_return", lambda values: float((values > 0).mean())),
+    regime_breakdown = (
+        history.assign(regime=_regime_labels(history["signal_pe10"]))
+        .groupby("regime")
+        .agg(
+            observations=("strategy_return", "count"),
+            average_return=("strategy_return", "mean"),
+            volatility=("strategy_return", "std"),
+            average_exposure=("exposure", "mean"),
+            hit_rate=("strategy_return", lambda values: float((values > 0).mean())),
+        )
     )
     stress_tests = _stress_tests(history)
     return TearSheet(metrics, monthly_returns, drawdowns.rename("drawdown"), regime_breakdown, stress_tests)
+
+
+def _build_research_diagnostics(
+    history: pd.DataFrame, folds: pd.DataFrame, cfg: ValuationRegimeConfig
+) -> ResearchDiagnostics:
+    valid_trials = sum(cheap < expensive for cheap in cfg.cheap_percentiles for expensive in cfg.expensive_percentiles)
+    parameter_stability = folds[
+        [
+            "test_start",
+            "test_end",
+            "cheap_percentile",
+            "expensive_percentile",
+            "cheap_threshold",
+            "expensive_threshold",
+            "validation_sharpe",
+            "test_return",
+            "selected_test_rank_percentile",
+        ]
+    ].copy()
+    overfitting_metrics = pd.Series(
+        {
+            "probability_backtest_overfitting": float((folds["selected_test_rank_percentile"] <= 0.5).mean()),
+            "deflated_sharpe_probability": _deflated_sharpe_probability(
+                history["strategy_return"].to_numpy(), valid_trials
+            ),
+            "selection_trials_per_fold": float(valid_trials),
+            "walk_forward_folds": float(len(folds)),
+        }
+    )
+    return ResearchDiagnostics(
+        baseline_comparison=_baseline_comparison(history, cfg),
+        bootstrap_confidence_intervals=_block_bootstrap_confidence_intervals(history, cfg),
+        parameter_stability=parameter_stability,
+        overfitting_metrics=overfitting_metrics,
+    )
+
+
+def _baseline_comparison(history: pd.DataFrame, cfg: ValuationRegimeConfig) -> pd.DataFrame:
+    market = history["benchmark_return"]
+    risk_free = history["risk_free_return"]
+    strategy = history["strategy_return"]
+    lagged_vol = history["benchmark_realized_volatility"].clip(lower=1e-8)
+    volatility_target_exposure = (cfg.target_volatility / lagged_vol).clip(upper=cfg.max_leverage)
+    strategy_vol = float(strategy.std(ddof=1) * np.sqrt(12.0))
+    market_vol = float(market.std(ddof=1) * np.sqrt(12.0))
+    volatility_match = 0.0 if market_vol == 0 else min(cfg.max_leverage, strategy_vol / market_vol)
+    beta_match = float(np.clip(_beta(strategy.to_numpy(), market.to_numpy()), 0.0, cfg.max_leverage))
+    baselines = {
+        "valuation_regime": strategy,
+        "valuation_regime_bond_sleeve": history["exposure"] * market
+        + (1.0 - history["exposure"]) * history["bond_return"]
+        - history["trading_cost"],
+        "buy_and_hold": market,
+        "volatility_targeted_equity": volatility_target_exposure * market
+        + (1.0 - volatility_target_exposure) * risk_free,
+        "sixty_forty_proxy": 0.6 * market + 0.4 * history["bond_return"],
+        "volatility_matched_equity": volatility_match * market + (1.0 - volatility_match) * risk_free,
+        "beta_matched_equity": beta_match * market + (1.0 - beta_match) * risk_free,
+    }
+    rows = []
+    for name, returns in baselines.items():
+        equity = (1.0 + returns).cumprod()
+        drawdown = 1.0 - equity / equity.cummax()
+        rows.append(
+            {
+                "baseline": name,
+                "cagr": _cagr(equity),
+                "volatility": float(returns.std(ddof=1) * np.sqrt(12.0)),
+                "sharpe": _sharpe(returns.to_numpy()),
+                "max_drawdown": float(drawdown.max()),
+                "beta": _beta(returns.to_numpy(), market.to_numpy()),
+            }
+        )
+    return pd.DataFrame(rows).set_index("baseline")
+
+
+def _block_bootstrap_confidence_intervals(history: pd.DataFrame, cfg: ValuationRegimeConfig) -> pd.DataFrame:
+    strategy = history["strategy_return"].to_numpy(dtype=float)
+    benchmark = history["benchmark_return"].to_numpy(dtype=float)
+    rng = np.random.default_rng(cfg.random_seed)
+    n = len(strategy)
+    block = min(cfg.bootstrap_block_months, n)
+    samples: dict[str, list[float]] = {"annualized_return": [], "sharpe": [], "alpha_annual": []}
+    for _ in range(cfg.bootstrap_replicates):
+        indices: list[int] = []
+        while len(indices) < n:
+            start = int(rng.integers(0, n))
+            indices.extend(((start + np.arange(block)) % n).tolist())
+        chosen = np.asarray(indices[:n], dtype=int)
+        strategy_sample = strategy[chosen]
+        benchmark_sample = benchmark[chosen]
+        samples["annualized_return"].append(float(12.0 * strategy_sample.mean()))
+        samples["sharpe"].append(_sharpe(strategy_sample))
+        samples["alpha_annual"].append(_alpha_annual(strategy_sample, benchmark_sample))
+    estimates = {
+        "annualized_return": float(12.0 * strategy.mean()),
+        "sharpe": _sharpe(strategy),
+        "alpha_annual": _alpha_annual(strategy, benchmark),
+    }
+    rows = []
+    for metric, values in samples.items():
+        lower, upper = np.quantile(values, [0.025, 0.975])
+        rows.append({"metric": metric, "estimate": estimates[metric], "lower_95": lower, "upper_95": upper})
+    return pd.DataFrame(rows).set_index("metric")
+
+
+def _deflated_sharpe_probability(returns: np.ndarray, selection_trials: int) -> float:
+    values = np.asarray(returns, dtype=float)
+    if len(values) < 3 or values.std(ddof=1) == 0:
+        return 0.0
+    monthly_sharpe = float(values.mean() / values.std(ddof=1))
+    skew = float(pd.Series(values).skew())
+    kurtosis = float(pd.Series(values).kurt() + 3.0)
+    variance = max(
+        (1.0 - skew * monthly_sharpe + ((kurtosis - 1.0) / 4.0) * monthly_sharpe**2) / (len(values) - 1),
+        1e-12,
+    )
+    sharpe_std = math.sqrt(variance)
+    trials = max(int(selection_trials), 2)
+    normal = NormalDist()
+    euler_gamma = 0.5772156649015329
+    expected_max = sharpe_std * (
+        (1.0 - euler_gamma) * normal.inv_cdf(1.0 - 1.0 / trials)
+        + euler_gamma * normal.inv_cdf(1.0 - 1.0 / (trials * math.e))
+    )
+    return float(normal.cdf((monthly_sharpe - expected_max) / sharpe_std))
 
 
 def _run_robustness(data: pd.DataFrame, cfg: ValuationRegimeConfig) -> RobustnessResult:
@@ -286,6 +501,7 @@ def _run_robustness(data: pd.DataFrame, cfg: ValuationRegimeConfig) -> Robustnes
             train_months=cfg.train_months,
             validation_months=cfg.validation_months,
             test_months=cfg.test_months,
+            minimum_test_months=cfg.minimum_test_months,
             step_months=cfg.step_months,
             cheap_percentiles=cfg.cheap_percentiles,
             expensive_percentiles=cfg.expensive_percentiles,
@@ -299,6 +515,9 @@ def _run_robustness(data: pd.DataFrame, cfg: ValuationRegimeConfig) -> Robustnes
             transaction_cost_bps=cost_bps,
             slippage_bps=cfg.slippage_bps,
             volatility_lookback=cfg.volatility_lookback,
+            bootstrap_replicates=cfg.bootstrap_replicates,
+            bootstrap_block_months=cfg.bootstrap_block_months,
+            random_seed=cfg.random_seed,
         )
         base = _run_without_nested_robustness(data, scenario_cfg)
         rows.append(
@@ -315,12 +534,17 @@ def _run_robustness(data: pd.DataFrame, cfg: ValuationRegimeConfig) -> Robustnes
 def _run_without_nested_robustness(data: pd.DataFrame, cfg: ValuationRegimeConfig) -> pd.Series:
     fold_histories = []
     start = 0
-    while start + cfg.train_months + cfg.validation_months + cfg.test_months <= len(data):
+    while start + cfg.train_months + cfg.validation_months + cfg.minimum_test_months <= len(data):
         train = data.iloc[start : start + cfg.train_months]
         validation = data.iloc[start + cfg.train_months : start + cfg.train_months + cfg.validation_months]
-        test = data.iloc[start + cfg.train_months + cfg.validation_months : start + cfg.train_months + cfg.validation_months + cfg.test_months]
+        test_start = start + cfg.train_months + cfg.validation_months
+        test = data.iloc[test_start : min(test_start + cfg.test_months, len(data))]
         params = _select_parameters(train, validation, cfg)
-        fold_histories.append(_run_strategy_window(test, cfg, params["cheap_threshold"], params["expensive_threshold"], initial_equity=1.0))
+        fold_histories.append(
+            _run_strategy_window(
+                test, cfg, params["cheap_threshold"], params["expensive_threshold"], initial_equity=1.0
+            )
+        )
         start += cfg.step_months
     history = _stitch_test_histories(fold_histories)
     benchmark = data.reindex(history.index)
@@ -332,7 +556,10 @@ def _run_without_nested_robustness(data: pd.DataFrame, cfg: ValuationRegimeConfi
 def _regime_labels(signal_pe10: pd.Series) -> pd.Series:
     low = signal_pe10.quantile(0.33)
     high = signal_pe10.quantile(0.67)
-    return pd.Series(np.where(signal_pe10 <= low, "cheap", np.where(signal_pe10 >= high, "expensive", "neutral")), index=signal_pe10.index)
+    return pd.Series(
+        np.where(signal_pe10 <= low, "cheap", np.where(signal_pe10 >= high, "expensive", "neutral")),
+        index=signal_pe10.index,
+    )
 
 
 def _stress_tests(history: pd.DataFrame) -> pd.DataFrame:
@@ -341,8 +568,12 @@ def _stress_tests(history: pd.DataFrame) -> pd.DataFrame:
     scenarios = {
         "worst_12_months": history["strategy_return"].rolling(12).sum().min(),
         "high_vol_months": history.loc[volatility >= high_vol_cutoff, "strategy_return"].mean(),
-        "expensive_months": history.loc[_regime_labels(history["signal_pe10"]) == "expensive", "strategy_return"].mean(),
-        "large_down_market_months": history.loc[history["benchmark_return"] <= history["benchmark_return"].quantile(0.1), "strategy_return"].mean(),
+        "expensive_months": history.loc[
+            _regime_labels(history["signal_pe10"]) == "expensive", "strategy_return"
+        ].mean(),
+        "large_down_market_months": history.loc[
+            history["benchmark_return"] <= history["benchmark_return"].quantile(0.1), "strategy_return"
+        ].mean(),
     }
     return pd.DataFrame({"scenario_return": pd.Series(scenarios)})
 

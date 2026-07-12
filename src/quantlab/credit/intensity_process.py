@@ -75,7 +75,11 @@ def simulate_cir_intensity(
     for step in range(1, steps + 1):
         previous = np.maximum(intensities[step - 1, :], 0.0)
         shocks = rng.normal(size=paths)
-        next_values = previous + params.kappa * (params.theta - previous) * dt + params.sigma * np.sqrt(previous) * np.sqrt(dt) * shocks
+        next_values = (
+            previous
+            + params.kappa * (params.theta - previous) * dt
+            + params.sigma * np.sqrt(previous) * np.sqrt(dt) * shocks
+        )
         next_values = np.maximum(next_values, 0.0)
         intensities[step, :] = next_values
         integrated += 0.5 * (previous + next_values) * dt

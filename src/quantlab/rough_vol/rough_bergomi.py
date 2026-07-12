@@ -53,7 +53,9 @@ def simulate_rough_bergomi(
         lags = times[i] - times[:i]
         kernel = np.maximum(lags, 1e-12) ** (params.hurst - 0.5)
         volterra = kernel_scale * (dw1[:, :i] @ kernel)
-        variance[:, i] = params.xi0 * np.exp(params.eta * volterra - 0.5 * params.eta**2 * times[i] ** (2.0 * params.hurst))
+        variance[:, i] = params.xi0 * np.exp(
+            params.eta * volterra - 0.5 * params.eta**2 * times[i] ** (2.0 * params.hurst)
+        )
         prev_var = np.maximum(variance[:, i - 1], 0.0)
         spot_paths[:, i] = spot_paths[:, i - 1] * np.exp(-0.5 * prev_var * dt + np.sqrt(prev_var) * dw2[:, i - 1])
 

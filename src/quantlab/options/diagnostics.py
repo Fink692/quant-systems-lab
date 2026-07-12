@@ -44,7 +44,9 @@ def pricing_error_report(quotes: list[OptionQuote], model_prices: np.ndarray) ->
         }
     )
     weighted_denominator = weights.sum()
-    weighted_mse = np.mean(errors**2) if weighted_denominator == 0 else np.sum(weights * errors**2) / weighted_denominator
+    weighted_mse = (
+        np.mean(errors**2) if weighted_denominator == 0 else np.sum(weights * errors**2) / weighted_denominator
+    )
     return PricingErrorReport(
         residuals=residuals,
         rmse=float(np.sqrt(np.mean(errors**2))),

@@ -52,7 +52,9 @@ def ssvi_total_variance(log_moneyness: np.ndarray | float, theta: float, params:
     return 0.5 * theta * (1.0 + params.rho * phi * k + np.sqrt(inner))
 
 
-def ssvi_implied_volatility(log_moneyness: np.ndarray | float, maturity: float, theta: float, params: SSVIParams) -> np.ndarray:
+def ssvi_implied_volatility(
+    log_moneyness: np.ndarray | float, maturity: float, theta: float, params: SSVIParams
+) -> np.ndarray:
     if maturity <= 0:
         raise ValueError("maturity must be positive")
     total_variance = ssvi_total_variance(log_moneyness, theta, params)
@@ -73,10 +75,17 @@ def ssvi_surface(
         raise ValueError("maturities/theta must match and log_moneyness must be one-dimensional")
     if np.any(maturities <= 0) or np.any(theta <= 0):
         raise ValueError("maturities and atm_total_variances must be positive")
-    return np.vstack([ssvi_implied_volatility(k, maturity, total_variance, params) for maturity, total_variance in zip(maturities, theta)])
+    return np.vstack(
+        [
+            ssvi_implied_volatility(k, maturity, total_variance, params)
+            for maturity, total_variance in zip(maturities, theta)
+        ]
+    )
 
 
-def check_ssvi_no_arbitrage(atm_total_variances: np.ndarray, params: SSVIParams, tolerance: float = 1e-10) -> SSVIArbitrageCheck:
+def check_ssvi_no_arbitrage(
+    atm_total_variances: np.ndarray, params: SSVIParams, tolerance: float = 1e-10
+) -> SSVIArbitrageCheck:
     """Check monotone ATM variance and common SSVI butterfly sufficient bounds."""
     params.validate()
     theta = np.asarray(atm_total_variances, dtype=float)
@@ -89,7 +98,9 @@ def check_ssvi_no_arbitrage(atm_total_variances: np.ndarray, params: SSVIParams,
     butterfly_metric = theta * phi**2 * (1.0 + abs(params.rho))
     return SSVIArbitrageCheck(
         calendar_monotone=bool(max_calendar_decrease <= tolerance),
-        butterfly_sufficient=bool(np.max(slope_metric) < 4.0 + tolerance and np.max(butterfly_metric) <= 4.0 + tolerance),
+        butterfly_sufficient=bool(
+            np.max(slope_metric) < 4.0 + tolerance and np.max(butterfly_metric) <= 4.0 + tolerance
+        ),
         max_calendar_decrease=max_calendar_decrease,
         max_butterfly_metric=float(np.max(butterfly_metric)),
         max_slope_metric=float(np.max(slope_metric)),

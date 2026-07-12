@@ -32,5 +32,7 @@ def fit_pca_factor_model(returns: pd.DataFrame, n_factors: int = 3, standardize:
     return PCAFactorResult(
         factor_returns=pd.DataFrame(factor_values, index=clean.index, columns=factor_names),
         loadings=pd.DataFrame(pca.components_.T, index=clean.columns, columns=factor_names),
-        explained_variance_ratio=pd.Series(pca.explained_variance_ratio_, index=factor_names, name="explained_variance_ratio"),
+        explained_variance_ratio=pd.Series(
+            pca.explained_variance_ratio_, index=factor_names, name="explained_variance_ratio"
+        ),
     )

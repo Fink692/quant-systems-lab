@@ -1,0 +1,12 @@
+{
+  "benchmark_version": "1.0.0",
+  "seed": 12,
+  "steps": 60,
+  "expected": {
+    "final_pnl": 64.12,
+    "fill_rate": 0.6583333333333333,
+    "average_spread": 0.02,
+    "max_inventory_abs": 5.0
+  },
+  "absolute_tolerance": 1e-9
+}

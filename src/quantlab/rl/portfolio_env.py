@@ -102,7 +102,9 @@ class PortfolioTradingEnv:
             trailing_volatility=trailing_volatility,
         )
 
-    def step(self, target_weights: np.ndarray | pd.Series) -> tuple[PortfolioTradingState, float, bool, dict[str, float]]:
+    def step(
+        self, target_weights: np.ndarray | pd.Series
+    ) -> tuple[PortfolioTradingState, float, bool, dict[str, float]]:
         if self.time_index >= len(self.returns):
             raise RuntimeError("environment is already done")
         old_equity = self.equity
@@ -223,7 +225,11 @@ def _normalize_weights(
     long_only: bool,
     max_leverage: float,
 ) -> pd.Series:
-    series = pd.Series(weights, index=asset_names, dtype=float) if not isinstance(weights, pd.Series) else weights.reindex(asset_names).astype(float)
+    series = (
+        pd.Series(weights, index=asset_names, dtype=float)
+        if not isinstance(weights, pd.Series)
+        else weights.reindex(asset_names).astype(float)
+    )
     if series.isna().any() or not np.isfinite(series.to_numpy()).all():
         raise ValueError("target weights must be finite and cover every asset")
     if long_only:

@@ -2,7 +2,7 @@
 
 This case study shows how Quant Systems Lab turns a theoretical Avellaneda-Stoikov quoting model into a more realistic book-level simulation with queue position, market-order flow, cancellations, inventory, and mark-to-market PnL.
 
-![Queue-aware market-making PnL and inventory](../examples/artifacts/market_making_pnl_inventory.svg)
+![Queue-aware market-making PnL and inventory](https://raw.githubusercontent.com/Fink692/quant-systems-lab/main/examples/artifacts/market_making_pnl_inventory.svg)
 
 ## Problem
 

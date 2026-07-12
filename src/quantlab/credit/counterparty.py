@@ -98,7 +98,9 @@ def unilateral_cva(
     return CVAResult(cva=float(np.sum(contribution)), contributions=frame, loss_given_default=float(lgd))
 
 
-def wrong_way_adjusted_profile(profile: ExposureProfile, credit_factor: np.ndarray, beta: float = 0.25) -> ExposureProfile:
+def wrong_way_adjusted_profile(
+    profile: ExposureProfile, credit_factor: np.ndarray, beta: float = 0.25
+) -> ExposureProfile:
     """Apply a simple wrong-way-risk multiplier to EPE/PFE using a credit stress factor."""
     factor = np.asarray(credit_factor, dtype=float)
     if factor.shape != profile.times.shape:

@@ -1,0 +1,61 @@
+{
+  "schema_version": "1.0.0",
+  "experiment_id": "queue-aware-mm-v1",
+  "random_seed": 7,
+  "dataset": {
+    "provider": "REPLACE_WITH_PROVIDER",
+    "dataset_id": "REPLACE_WITH_IMMUTABLE_DATASET_ID",
+    "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+    "schema_version": "1.0.0",
+    "book_level": "L3",
+    "venue": "REPLACE_WITH_VENUE",
+    "symbol": "REPLACE_WITH_SYMBOL",
+    "tick_size": 0.01,
+    "timezone": "UTC"
+  },
+  "periods": {
+    "train": {"start": "2024-01-02T00:00:00Z", "end": "2024-04-01T00:00:00Z"},
+    "validation": {"start": "2024-04-01T00:00:00Z", "end": "2024-05-01T00:00:00Z"},
+    "test": {"start": "2024-05-01T00:00:00Z", "end": "2024-06-01T00:00:00Z"}
+  },
+  "strategies": [
+    "fixed_spread",
+    "avellaneda_stoikov",
+    "queue_aware",
+    "toxicity_aware",
+    "latency_aware"
+  ],
+  "sensitivity": {
+    "latency_ns": [0, 100000, 500000, 1000000, 5000000],
+    "queue_ahead_fraction": [0.0, 0.25, 0.5, 0.75, 1.0],
+    "fee_multiplier": [0.5, 1.0, 1.5, 2.0]
+  },
+  "cost_model": {
+    "maker_fee_bps": -0.1,
+    "taker_fee_bps": 0.3,
+    "fixed_fee_per_order": 0.0
+  },
+  "execution": {
+    "order_size": 10.0,
+    "inventory_limit": 100.0,
+    "quote_interval_ns": 100000000,
+    "toxicity_window": 100,
+    "volatility_window": 100,
+    "adverse_horizon_ns": 1000000000,
+    "record_every": 100
+  },
+  "strategy_parameters": {
+    "fixed_half_spread_ticks": 0.5,
+    "avellaneda_risk_aversion": 0.05,
+    "avellaneda_liquidity": 100.0,
+    "avellaneda_horizon": 1.0,
+    "inventory_skew_ticks": 0.25,
+    "toxicity_threshold": 0.15,
+    "max_toxicity_widen_ticks": 2.0
+  },
+  "evaluation": {
+    "embargo_ns": 1000000000,
+    "bootstrap_replicates": 500,
+    "bootstrap_block_size": 20
+  }
+}

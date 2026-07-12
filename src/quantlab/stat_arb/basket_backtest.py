@@ -51,7 +51,9 @@ def backtest_johansen_basket_strategy(
     if clean.shape[0] < max(window + 2, 10) or clean.shape[1] < 2:
         raise ValueError("prices must have enough rows and at least two assets")
 
-    hedge = johansen_hedge_vector(clean, vector_index=vector_index, normalize_asset=normalize_asset, det_order=det_order, k_ar_diff=k_ar_diff)
+    hedge = johansen_hedge_vector(
+        clean, vector_index=vector_index, normalize_asset=normalize_asset, det_order=det_order, k_ar_diff=k_ar_diff
+    )
     if hedge.abs().sum() <= 0:
         raise ValueError("hedge vector has zero gross exposure")
     weights = gross_exposure * hedge / hedge.abs().sum()

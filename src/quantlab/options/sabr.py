@@ -45,7 +45,7 @@ def sabr_implied_volatility(
     one_minus_beta = 1.0 - beta
 
     if abs(forward - strike) < 1e-12:
-        f_beta = forward ** one_minus_beta
+        f_beta = forward**one_minus_beta
         correction = (
             (one_minus_beta**2 / 24.0) * (alpha**2 / forward ** (2.0 * one_minus_beta))
             + (rho * beta * nu * alpha / 4.0) / f_beta
@@ -62,11 +62,7 @@ def sabr_implied_volatility(
         x_z = np.log((np.sqrt(1.0 - 2.0 * rho * z + z**2) + z - rho) / (1.0 - rho))
         z_over_xz = z / x_z
 
-    denominator = fk_beta * (
-        1.0
-        + (one_minus_beta**2 / 24.0) * log_fk**2
-        + (one_minus_beta**4 / 1920.0) * log_fk**4
-    )
+    denominator = fk_beta * (1.0 + (one_minus_beta**2 / 24.0) * log_fk**2 + (one_minus_beta**4 / 1920.0) * log_fk**4)
     correction = (
         (one_minus_beta**2 / 24.0) * (alpha**2 / (forward * strike) ** one_minus_beta)
         + (rho * beta * nu * alpha / 4.0) / fk_beta

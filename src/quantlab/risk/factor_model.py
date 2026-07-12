@@ -30,7 +30,9 @@ def fit_factor_model(asset_returns: pd.DataFrame, factor_returns: pd.DataFrame) 
     intercepts = pd.Series(coefficients[0, :], index=aligned_assets.columns, name="intercept")
     exposures = pd.DataFrame(coefficients[1:, :].T, index=aligned_assets.columns, columns=aligned_factors.columns)
     fitted = x @ coefficients
-    residuals = pd.DataFrame(aligned_assets.to_numpy() - fitted, index=aligned_assets.index, columns=aligned_assets.columns)
+    residuals = pd.DataFrame(
+        aligned_assets.to_numpy() - fitted, index=aligned_assets.index, columns=aligned_assets.columns
+    )
     specific_variance = residuals.var(axis=0, ddof=x.shape[1]).clip(lower=0.0)
     factor_covariance = aligned_factors.cov()
     return FactorModelResult(intercepts, exposures, factor_covariance, specific_variance, residuals)

@@ -7,9 +7,13 @@ from typing import Sequence
 
 import numpy as np
 
-from quantlab.data.loaders import returns_from_prices, validate_credit_spread_curve, validate_option_chain, validate_price_panel
-from quantlab.data.synthetic import synthetic_factor_panel, synthetic_option_chain
-from quantlab.data.synthetic import synthetic_credit_spreads
+from quantlab.data.loaders import (
+    returns_from_prices,
+    validate_credit_spread_curve,
+    validate_option_chain,
+    validate_price_panel,
+)
+from quantlab.data.synthetic import synthetic_credit_spreads, synthetic_factor_panel, synthetic_option_chain
 from quantlab.market_making.avellaneda_stoikov import AvellanedaStoikovParams
 from quantlab.market_making.simulator import simulate_market_maker
 from quantlab.options.black_scholes import black_scholes_price, implied_volatility
@@ -134,11 +138,15 @@ def main(argv: Sequence[str] | None = None) -> int:
         var_series = np.full_like(portfolio_returns, var_estimate)
         kupiec = kupiec_var_backtest(portfolio_returns, var_series, confidence=args.confidence)
         christoffersen = christoffersen_var_backtest(portfolio_returns, var_series, confidence=args.confidence)
-        traffic_light = basel_traffic_light(kupiec.exceptions, observations=kupiec.observations, confidence=args.confidence)
+        traffic_light = basel_traffic_light(
+            kupiec.exceptions, observations=kupiec.observations, confidence=args.confidence
+        )
         payload = {
             "historical_var": var_estimate,
             "historical_cvar": historical_cvar(portfolio_returns, confidence=args.confidence),
-            "gaussian_var": gaussian_var(float(portfolio_returns.mean()), float(portfolio_returns.std(ddof=1)), args.confidence),
+            "gaussian_var": gaussian_var(
+                float(portfolio_returns.mean()), float(portfolio_returns.std(ddof=1)), args.confidence
+            ),
             "component_var_sum": float(components.sum()),
             "kupiec_p_value": kupiec.kupiec_p_value,
             "christoffersen_p_value": christoffersen.conditional_coverage_p_value,

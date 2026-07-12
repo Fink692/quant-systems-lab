@@ -19,9 +19,13 @@ def min_variance_weights(covariance: np.ndarray, long_only: bool = True) -> np.n
         ones = np.ones(n_assets)
         return (inv @ ones) / (ones @ inv @ ones)
 
-    objective = lambda weights: float(weights @ cov @ weights)
+    def objective(weights: np.ndarray) -> float:
+        return float(weights @ cov @ weights)
+
     constraints = {"type": "eq", "fun": lambda weights: np.sum(weights) - 1.0}
-    result = minimize(objective, np.full(n_assets, 1.0 / n_assets), bounds=[(0.0, 1.0)] * n_assets, constraints=constraints)
+    result = minimize(
+        objective, np.full(n_assets, 1.0 / n_assets), bounds=[(0.0, 1.0)] * n_assets, constraints=constraints
+    )
     if not result.success:
         raise RuntimeError(result.message)
     return result.x
@@ -40,7 +44,9 @@ def mean_variance_weights(
     if risk_aversion <= 0:
         raise ValueError("risk_aversion must be positive")
 
-    objective = lambda weights: float(0.5 * risk_aversion * weights @ cov @ weights - mu @ weights)
+    def objective(weights: np.ndarray) -> float:
+        return float(0.5 * risk_aversion * weights @ cov @ weights - mu @ weights)
+
     constraints = {"type": "eq", "fun": lambda weights: np.sum(weights) - 1.0}
     bounds = [(0.0, 1.0)] * len(mu) if long_only else None
     result = minimize(objective, np.full(len(mu), 1.0 / len(mu)), bounds=bounds, constraints=constraints)

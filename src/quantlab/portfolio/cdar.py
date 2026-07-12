@@ -92,7 +92,13 @@ def cdar_minimizing_weights(
         b_ub.append(0.0)
 
     weight_bounds = [(0.0, 1.0)] * n_assets if long_only else [(None, None)] * n_assets
-    bounds = weight_bounds + [(0.0, None)] * n_periods + [(0.0, None)] * n_periods + [(None, None)] + [(0.0, None)] * n_periods
+    bounds = (
+        weight_bounds
+        + [(0.0, None)] * n_periods
+        + [(0.0, None)] * n_periods
+        + [(None, None)]
+        + [(0.0, None)] * n_periods
+    )
 
     result = linprog(
         objective,

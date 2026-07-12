@@ -28,7 +28,9 @@ def test_order_flow_toxicity_metrics():
 
 def test_tabular_q_learning_returns_valid_policy_table():
     prices = np.linspace(100.0, 120.0, 40)
-    result = train_tabular_q_learning(prices, candidate_weights=np.array([-1.0, 0.0, 1.0]), episodes=20, epsilon=0.1, seed=5)
+    result = train_tabular_q_learning(
+        prices, candidate_weights=np.array([-1.0, 0.0, 1.0]), episodes=20, epsilon=0.1, seed=5
+    )
     assert result.q_table.shape == (3, 3)
     assert len(result.episode_rewards) == 20
     assert np.isfinite(result.q_table).all()

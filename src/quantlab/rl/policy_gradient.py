@@ -103,7 +103,9 @@ def train_softmax_policy_gradient(
         returns_to_go = _discounted_returns(np.asarray(rewards), discount_factor)
         if len(returns_to_go) > 1 and returns_to_go.std(ddof=1) > 0:
             returns_to_go = (returns_to_go - returns_to_go.mean()) / returns_to_go.std(ddof=1)
-        for features, probabilities, action_index, advantage in zip(features_seen, probabilities_seen, actions_seen, returns_to_go):
+        for features, probabilities, action_index, advantage in zip(
+            features_seen, probabilities_seen, actions_seen, returns_to_go
+        ):
             gradient = -np.outer(features, probabilities)
             gradient[:, action_index] += features
             theta += learning_rate * advantage * gradient
@@ -189,7 +191,9 @@ def train_constrained_policy_gradient(
         returns_to_go = _discounted_returns(np.asarray(adjusted_rewards), discount_factor)
         if len(returns_to_go) > 1 and returns_to_go.std(ddof=1) > 0:
             returns_to_go = (returns_to_go - returns_to_go.mean()) / returns_to_go.std(ddof=1)
-        for features, probabilities, action_index, advantage in zip(features_seen, probabilities_seen, actions_seen, returns_to_go):
+        for features, probabilities, action_index, advantage in zip(
+            features_seen, probabilities_seen, actions_seen, returns_to_go
+        ):
             gradient = -np.outer(features, probabilities)
             gradient[:, action_index] += features
             theta += learning_rate * advantage * gradient

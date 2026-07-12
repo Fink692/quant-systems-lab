@@ -19,7 +19,9 @@ def test_cdar_minimizing_weights_are_feasible_and_reduce_path_risk():
     assert result.success
     assert abs(result.weights.sum() - 1.0) < 1e-10
     assert (result.weights >= -1e-12).all()
-    equal_weight_cdar = portfolio_drawdown_summary(returns, np.full(3, 1.0 / 3.0), confidence=0.8).conditional_drawdown_at_risk
+    equal_weight_cdar = portfolio_drawdown_summary(
+        returns, np.full(3, 1.0 / 3.0), confidence=0.8
+    ).conditional_drawdown_at_risk
     assert result.weights["crashy"] < 0.05
     assert result.drawdown_summary.conditional_drawdown_at_risk <= equal_weight_cdar
     assert result.drawdown_summary.conditional_drawdown_at_risk >= 0.0

@@ -16,7 +16,9 @@ class LogisticHazardFit:
     defaults: int
 
     def predict_hazard(self, covariates: pd.DataFrame) -> pd.Series:
-        aligned = covariates.reindex(columns=[name for name in self.coefficients.index if name != "intercept"]).astype(float)
+        aligned = covariates.reindex(columns=[name for name in self.coefficients.index if name != "intercept"]).astype(
+            float
+        )
         if aligned.isna().any().any():
             raise ValueError("covariates must contain every fitted feature")
         linear = self.coefficients["intercept"] + aligned.to_numpy() @ self.coefficients.drop("intercept").to_numpy()

@@ -42,11 +42,7 @@ def bates_characteristic_function(
     jump_cf = np.exp(
         params.jump_intensity
         * maturity
-        * (
-            np.exp(1j * u * params.jump_mean - 0.5 * params.jump_volatility**2 * u**2)
-            - 1.0
-            - 1j * u * jump_compensator
-        )
+        * (np.exp(1j * u * params.jump_mean - 0.5 * params.jump_volatility**2 * u**2) - 1.0 - 1j * u * jump_compensator)
     )
     return complex(heston_cf * jump_cf)
 
@@ -64,7 +60,9 @@ def bates_price(
     if option_type not in {"call", "put"}:
         raise ValueError("option_type must be 'call' or 'put'")
 
-    cf = lambda u: bates_characteristic_function(u, params, spot, maturity, rate, dividend)
+    def cf(u):
+        return bates_characteristic_function(u, params, spot, maturity, rate, dividend)
+
     call = carr_madan_call_price(cf, strike, maturity, rate)
     if option_type == "call":
         return call

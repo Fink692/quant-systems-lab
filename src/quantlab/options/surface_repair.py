@@ -44,11 +44,15 @@ def repair_call_price_surface(
     constraints = []
     for t_idx in range(n_maturities - 1):
         for k_idx in range(n_strikes):
-            constraints.append({"type": "ineq", "fun": lambda x, t=t_idx, k=k_idx: unpack(x)[t + 1, k] - unpack(x)[t, k]})
+            constraints.append(
+                {"type": "ineq", "fun": lambda x, t=t_idx, k=k_idx: unpack(x)[t + 1, k] - unpack(x)[t, k]}
+            )
 
     for t_idx in range(n_maturities):
         for k_idx in range(n_strikes - 1):
-            constraints.append({"type": "ineq", "fun": lambda x, t=t_idx, k=k_idx: unpack(x)[t, k] - unpack(x)[t, k + 1]})
+            constraints.append(
+                {"type": "ineq", "fun": lambda x, t=t_idx, k=k_idx: unpack(x)[t, k] - unpack(x)[t, k + 1]}
+            )
 
     for t_idx in range(n_maturities):
         for k_idx in range(1, n_strikes - 1):
@@ -58,8 +62,7 @@ def repair_call_price_surface(
                 {
                     "type": "ineq",
                     "fun": lambda x, t=t_idx, k=k_idx, lw=left_width, rw=right_width: (
-                        (unpack(x)[t, k + 1] - unpack(x)[t, k]) / rw
-                        - (unpack(x)[t, k] - unpack(x)[t, k - 1]) / lw
+                        (unpack(x)[t, k + 1] - unpack(x)[t, k]) / rw - (unpack(x)[t, k] - unpack(x)[t, k - 1]) / lw
                     ),
                 }
             )

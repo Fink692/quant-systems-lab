@@ -48,7 +48,9 @@ def test_macro_factor_model_recovers_exposures_and_stress_pnl():
     assert np.allclose(result.exposures.loc["A"], betas.loc["A"], atol=2e-3)
     assert result.r_squared.mean() > 0.999
     assert result.covariance_matrix().shape == (4, 4)
-    assert np.isclose(result.stress_pnl(weights, shocks, portfolio_value=100.0), 100.0 * (result.portfolio_exposure(weights) @ shocks))
+    assert np.isclose(
+        result.stress_pnl(weights, shocks, portfolio_value=100.0), 100.0 * (result.portfolio_exposure(weights) @ shocks)
+    )
 
 
 def test_macro_factor_model_rejects_missing_shock_coverage():

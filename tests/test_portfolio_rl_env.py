@@ -1,7 +1,12 @@
 import numpy as np
 import pandas as pd
 
-from quantlab.rl.portfolio_env import PortfolioTradingEnv, constant_mix_policy, momentum_rotation_policy, run_portfolio_policy
+from quantlab.rl.portfolio_env import (
+    PortfolioTradingEnv,
+    constant_mix_policy,
+    momentum_rotation_policy,
+    run_portfolio_policy,
+)
 from quantlab.workflows.demo_suite import run_full_demo
 
 
@@ -26,7 +31,7 @@ def test_portfolio_trading_env_runs_constant_mix_policy():
 def test_portfolio_env_normalizes_levered_actions_and_reports_risk():
     prices = pd.DataFrame({"A": [100.0, 95.0, 90.0], "B": [100.0, 102.0, 104.0]})
     env = PortfolioTradingEnv(prices, transaction_cost_bps=0.0, drawdown_penalty=0.1, volatility_window=2)
-    state = env.reset()
+    env.reset()
     next_state, reward, done, info = env.step(pd.Series({"A": 2.0, "B": 1.0}))
     assert not done
     assert abs(next_state.weights.sum() - 1.0) < 1e-12

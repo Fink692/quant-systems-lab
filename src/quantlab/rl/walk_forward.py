@@ -43,7 +43,9 @@ def walk_forward_q_learning(
             transaction_cost_bps=transaction_cost_bps,
             seed=None if seed is None else seed + fold,
         )
-        test_return = _evaluate_q_policy(test_prices, model.q_table, model.candidate_weights, model.bin_edges, transaction_cost_bps)
+        test_return = _evaluate_q_policy(
+            test_prices, model.q_table, model.candidate_weights, model.bin_edges, transaction_cost_bps
+        )
         rows.append(
             {
                 "fold": fold,

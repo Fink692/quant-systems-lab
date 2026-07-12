@@ -7,6 +7,7 @@ __pycache__/
 .ruff_cache/
 .coverage
 htmlcov/
+site/
 
 .venv/
 venv/
@@ -18,3 +19,9 @@ dist/
 
 .env
 .env.*
+
+# Licensed or downloaded market data and generated research registries
+data/real/
+data/processed/
+research_runs/
+tmp/

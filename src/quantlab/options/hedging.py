@@ -6,7 +6,6 @@ from typing import Literal
 import numpy as np
 import pandas as pd
 
-from quantlab.options.black_scholes import black_scholes_price
 from quantlab.options.greeks import black_scholes_greeks
 
 OptionType = Literal["call", "put"]

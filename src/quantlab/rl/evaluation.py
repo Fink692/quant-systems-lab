@@ -55,7 +55,9 @@ def run_policy(env: TradingEnv, policy: Policy) -> BacktestResult:
     return BacktestResult(pd.DataFrame(rows))
 
 
-def walk_forward_splits(length: int, train_size: int, test_size: int, step_size: int | None = None) -> Iterator[tuple[slice, slice]]:
+def walk_forward_splits(
+    length: int, train_size: int, test_size: int, step_size: int | None = None
+) -> Iterator[tuple[slice, slice]]:
     if min(length, train_size, test_size) <= 0:
         raise ValueError("length, train_size, and test_size must be positive")
     step = test_size if step_size is None else step_size

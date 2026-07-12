@@ -24,7 +24,9 @@ def test_resume_artifact_generator_writes_svg_charts(tmp_path):
         assert text.startswith("<svg")
         assert "</svg>" in text
     assert "Queue-Aware Market Making" in (tmp_path / "market_making_pnl_inventory.svg").read_text(encoding="utf-8")
-    assert "Synthetic Volatility Surface Slices" in (tmp_path / "volatility_surface_slices.svg").read_text(encoding="utf-8")
+    assert "Synthetic Volatility Surface Slices" in (tmp_path / "volatility_surface_slices.svg").read_text(
+        encoding="utf-8"
+    )
     assert "Factor Risk Contributions" in (tmp_path / "factor_risk_contributions.svg").read_text(encoding="utf-8")
 
 

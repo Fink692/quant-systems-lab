@@ -30,7 +30,9 @@ class StatArbPortfolioResult:
         return float((cumulative.cummax() - cumulative).max())
 
 
-def allocate_pair_capital(candidates: list[PairCandidate], total_gross: float = 1.0, score_power: float = 1.0) -> pd.Series:
+def allocate_pair_capital(
+    candidates: list[PairCandidate], total_gross: float = 1.0, score_power: float = 1.0
+) -> pd.Series:
     """Allocate gross exposure across pair candidates by rank score."""
     if total_gross <= 0 or score_power < 0:
         raise ValueError("total_gross must be positive and score_power non-negative")
@@ -68,7 +70,9 @@ def backtest_pair_portfolio(
 
     for candidate in candidates:
         label = _candidate_label(candidate)
-        spread = clean[candidate.dependent].to_numpy(dtype=float) - candidate.hedge_ratio * clean[candidate.independent].to_numpy(dtype=float)
+        spread = clean[candidate.dependent].to_numpy(dtype=float) - candidate.hedge_ratio * clean[
+            candidate.independent
+        ].to_numpy(dtype=float)
         signal = mean_reversion_signal(spread, entry_z=entry_z, exit_z=exit_z, window=window)
         allocation = float(allocations.loc[label])
         pnl = np.zeros(len(clean), dtype=float)
@@ -96,7 +100,9 @@ def backtest_pair_portfolio(
         index=clean.index,
     )
     asset_weights = pd.DataFrame(asset_weight_rows)
-    return StatArbPortfolioResult(history=history, pair_pnl=pair_pnl, allocations=allocations, asset_weights=asset_weights)
+    return StatArbPortfolioResult(
+        history=history, pair_pnl=pair_pnl, allocations=allocations, asset_weights=asset_weights
+    )
 
 
 def _candidate_label(candidate: PairCandidate) -> str:

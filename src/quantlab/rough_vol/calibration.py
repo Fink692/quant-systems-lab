@@ -49,7 +49,9 @@ def estimate_hurst_from_variogram(log_variance_proxy: np.ndarray, max_lag: int =
     ss_res = np.sum((y - fitted) ** 2)
     ss_tot = np.sum((y - np.mean(y)) ** 2)
     r_squared = 1.0 if ss_tot == 0 else 1.0 - ss_res / ss_tot
-    return RoughnessEstimate(hurst=float(np.clip(0.5 * slope, 0.0, 1.0)), intercept=float(intercept), r_squared=float(r_squared))
+    return RoughnessEstimate(
+        hurst=float(np.clip(0.5 * slope, 0.0, 1.0)), intercept=float(intercept), r_squared=float(r_squared)
+    )
 
 
 def calibrate_rough_bergomi_atm(
@@ -63,7 +65,9 @@ def calibrate_rough_bergomi_atm(
     vols = np.asarray(atm_volatilities, dtype=float)
     skews = np.asarray(atm_skews, dtype=float)
     if times.ndim != 1 or vols.shape != times.shape or skews.shape != times.shape or len(times) < 2:
-        raise ValueError("maturities, atm_volatilities, and atm_skews must be matching vectors with at least two points")
+        raise ValueError(
+            "maturities, atm_volatilities, and atm_skews must be matching vectors with at least two points"
+        )
     if np.any(times <= 0) or np.any(vols <= 0) or np.any(skews == 0):
         raise ValueError("maturities and vols must be positive, and skews cannot be zero")
     if not -1 < rho < 1 or abs(rho) < 1e-8:

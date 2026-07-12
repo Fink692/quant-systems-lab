@@ -81,5 +81,7 @@ def simulate_systemic_monte_carlo(
         default_probabilities=pd.Series(default_probabilities, index=institution_labels, name="default_probability"),
         value_at_risk=var,
         expected_shortfall=float(total_shortfall[tail_mask].mean()) if np.any(tail_mask) else var,
-        tail_shortfall_contribution=pd.Series(tail_contribution, index=institution_labels, name="tail_shortfall_contribution"),
+        tail_shortfall_contribution=pd.Series(
+            tail_contribution, index=institution_labels, name="tail_shortfall_contribution"
+        ),
     )

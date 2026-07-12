@@ -13,12 +13,18 @@ from quantlab.credit.intensity import fit_logistic_hazard
 from quantlab.credit.intensity_process import CIRIntensityParams, simulate_cir_intensity
 from quantlab.credit.kmv import default_point, distance_to_default
 from quantlab.credit.migration import cumulative_default_probability
-from quantlab.credit.pricing import cds_par_spread, risky_coupon_bond_price, risky_zero_coupon_price
 from quantlab.credit.portfolio import gaussian_copula_default_losses
+from quantlab.credit.pricing import cds_par_spread, risky_coupon_bond_price, risky_zero_coupon_price
 from quantlab.credit.sensitivity import coupon_bond_spread_sensitivity
 from quantlab.credit.structural import calibrate_merton_asset_parameters
 from quantlab.credit.survival import fit_exponential_hazard
 from quantlab.credit.tranches import tranche_loss_distribution
+from quantlab.data.loaders import (
+    returns_from_prices,
+    validate_credit_spread_curve,
+    validate_option_chain,
+    validate_price_panel,
+)
 from quantlab.data.synthetic import (
     synthetic_cointegrated_prices,
     synthetic_credit_spreads,
@@ -26,9 +32,8 @@ from quantlab.data.synthetic import (
     synthetic_factor_panel,
     synthetic_option_chain,
 )
-from quantlab.data.loaders import returns_from_prices, validate_credit_spread_curve, validate_option_chain, validate_price_panel
-from quantlab.market_making.avellaneda_stoikov import AvellanedaStoikovParams
 from quantlab.market_making.attribution import attribute_market_making_pnl
+from quantlab.market_making.avellaneda_stoikov import AvellanedaStoikovParams
 from quantlab.market_making.book_simulator import simulate_order_book_market_maker
 from quantlab.market_making.execution import ExecutionModelParams, expected_execution_value
 from quantlab.market_making.fill_calibration import calibrate_fill_intensity
@@ -41,16 +46,14 @@ from quantlab.market_making.simulator import simulate_market_maker
 from quantlab.market_making.toxicity import adverse_selection_report, order_flow_imbalance, volume_synchronized_pin
 from quantlab.options.bates import BatesParams, bates_price
 from quantlab.options.black_scholes import black_scholes_price
-from quantlab.options.calibration import calibrate_bates, calibrate_heston, calibrate_sabr_smile
-from quantlab.options.calibration import OptionQuote
-from quantlab.options.diagnostics import pricing_error_report
+from quantlab.options.calibration import OptionQuote, calibrate_bates, calibrate_heston, calibrate_sabr_smile
 from quantlab.options.density import breeden_litzenberger_density
+from quantlab.options.diagnostics import pricing_error_report
 from quantlab.options.greeks import black_scholes_greeks
 from quantlab.options.hedging import simulate_delta_hedge
 from quantlab.options.heston import HestonParams, heston_price
 from quantlab.options.local_volatility import dupire_local_volatility
 from quantlab.options.monte_carlo import heston_monte_carlo_price
-from quantlab.options.variance_reduction import black_scholes_antithetic_price, black_scholes_control_variate_price
 from quantlab.options.portfolio import OptionPosition, stress_option_book
 from quantlab.options.sabr import SABRParams, sabr_implied_volatility
 from quantlab.options.sabr_surface import calibrate_sabr_surface
@@ -60,6 +63,7 @@ from quantlab.options.surface_arbitrage import detect_surface_arbitrage
 from quantlab.options.surface_repair import repair_call_price_surface
 from quantlab.options.surface_stability import diagnose_surface_interpolation_stability
 from quantlab.options.svi import calibrate_svi_slice
+from quantlab.options.variance_reduction import black_scholes_antithetic_price, black_scholes_control_variate_price
 from quantlab.portfolio.bayesian import bayesian_mean_variance_weights, bayesian_return_posterior
 from quantlab.portfolio.black_litterman import black_litterman_posterior
 from quantlab.portfolio.cdar import cdar_minimizing_weights
@@ -68,10 +72,12 @@ from quantlab.portfolio.cvar_attribution import portfolio_cvar_contributions
 from quantlab.portfolio.drawdown import portfolio_drawdown_summary
 from quantlab.portfolio.frontier import efficient_frontier
 from quantlab.portfolio.optimization import mean_variance_weights, min_variance_weights, risk_parity_weights
-from quantlab.portfolio.robust import ellipsoidal_robust_mean_variance_weights, robust_mean_variance_weights
 from quantlab.portfolio.risk_budget import portfolio_risk_contributions, risk_budget_weights
+from quantlab.portfolio.robust import ellipsoidal_robust_mean_variance_weights, robust_mean_variance_weights
 from quantlab.portfolio.stress import historical_stress_scenarios, stress_test_portfolio
 from quantlab.risk.attribution import factor_risk_attribution
+from quantlab.risk.backtesting import basel_traffic_light, christoffersen_var_backtest, kupiec_var_backtest
+from quantlab.risk.covariance import ledoit_wolf_covariance
 from quantlab.risk.cross_sectional import (
     build_sector_exposures,
     estimate_cross_sectional_factor_returns,
@@ -81,16 +87,23 @@ from quantlab.risk.cross_sectional import (
 from quantlab.risk.factor_model import fit_factor_model
 from quantlab.risk.macro import fit_macro_factor_model, macro_surprise_factors
 from quantlab.risk.model_validation import rolling_factor_model_validation
-from quantlab.risk.style_factors import build_style_exposures, estimate_style_factor_returns
 from quantlab.risk.statistical_factors import fit_pca_factor_model
-from quantlab.risk.backtesting import basel_traffic_light, christoffersen_var_backtest, kupiec_var_backtest
-from quantlab.risk.covariance import ledoit_wolf_covariance
+from quantlab.risk.style_factors import build_style_exposures, estimate_style_factor_returns
 from quantlab.risk.var import historical_var
 from quantlab.rl.deep_q import train_deep_q_learning
 from quantlab.rl.evaluation import constant_weight_policy, run_policy
-from quantlab.rl.policy_gradient import PolicyGradientRiskConstraints, train_constrained_policy_gradient, train_softmax_policy_gradient
+from quantlab.rl.policy_gradient import (
+    PolicyGradientRiskConstraints,
+    train_constrained_policy_gradient,
+    train_softmax_policy_gradient,
+)
 from quantlab.rl.policy_search import grid_search_constant_weight_policy
-from quantlab.rl.portfolio_env import PortfolioTradingEnv, constant_mix_policy, momentum_rotation_policy, run_portfolio_policy
+from quantlab.rl.portfolio_env import (
+    PortfolioTradingEnv,
+    constant_mix_policy,
+    momentum_rotation_policy,
+    run_portfolio_policy,
+)
 from quantlab.rl.q_learning import train_tabular_q_learning
 from quantlab.rl.risk_controls import RiskLimits, risk_limited_policy, volatility_target_weight
 from quantlab.rl.risk_metrics import performance_summary
@@ -109,8 +122,8 @@ from quantlab.stat_arb.kalman import kalman_dynamic_hedge_ratio
 from quantlab.stat_arb.network import mean_reversion_signal, pairwise_cointegration_network
 from quantlab.stat_arb.portfolio import backtest_pair_portfolio
 from quantlab.stat_arb.selection import candidate_spread_weights, rank_cointegrated_pairs
-from quantlab.systemic.clearing import eisenberg_noe_clearing
 from quantlab.systemic.capital import capital_adequacy, systemic_capital_surcharge
+from quantlab.systemic.clearing import eisenberg_noe_clearing
 from quantlab.systemic.contagion import eigenvalue_stability, simulate_contagion
 from quantlab.systemic.debtrank import debt_rank
 from quantlab.systemic.firesale import simulate_fire_sale
@@ -212,7 +225,9 @@ def run_full_demo(seed: int = 7) -> DemoSuiteResult:
 
     pivot_prices = call_chain.pivot(index="maturity", columns="strike", values="price").sort_index().sort_index(axis=1)
     first_price_slice = pivot_prices.loc[first_maturity].to_numpy(dtype=float)
-    density = breeden_litzenberger_density(pivot_prices.columns.to_numpy(dtype=float), first_price_slice, first_maturity, 0.03)
+    density = breeden_litzenberger_density(
+        pivot_prices.columns.to_numpy(dtype=float), first_price_slice, first_maturity, 0.03
+    )
     arbitrage_violations = detect_surface_arbitrage(
         pivot_prices.index.to_numpy(),
         pivot_prices.columns.to_numpy(dtype=float),
@@ -274,7 +289,9 @@ def run_full_demo(seed: int = 7) -> DemoSuiteResult:
         99.9,
         "bid",
         horizon=1.0,
-        params=ExecutionModelParams(fill_intensity=2.0, order_book_liquidity=1.2, latency=0.01, adverse_selection_bps=0.5),
+        params=ExecutionModelParams(
+            fill_intensity=2.0, order_book_liquidity=1.2, latency=0.01, adverse_selection_bps=0.5
+        ),
     )
     latency_report = latency_slippage_report(
         quote_mid_prices=np.array([100.0, 100.0, 100.0, 100.0]),
@@ -282,12 +299,16 @@ def run_full_demo(seed: int = 7) -> DemoSuiteResult:
         quote_prices=np.array([99.99, 100.01, 99.98, 100.02]),
         sides=np.array(["bid", "ask", "bid", "ask"]),
     )
-    queue = simulate_queue_position(20.0, 5.0, market_order_intensity=40.0, cancellation_intensity=8.0, horizon=1.0, seed=seed)
+    queue = simulate_queue_position(
+        20.0, 5.0, market_order_intensity=40.0, cancellation_intensity=8.0, horizon=1.0, seed=seed
+    )
     quote_distances = np.array([0.01, 0.02, 0.03, 0.05, 0.08, 0.10, 0.15, 0.20])
     horizons = np.ones_like(quote_distances)
     fill_flags = np.array([True, False, True, True, False, True, False, False])
     fill_calibration = calibrate_fill_intensity(quote_distances, horizons, fill_flags)
-    trade_signs = np.sign(np.diff(market_making.history["mid"].to_numpy(), prepend=market_making.history["mid"].iloc[0]))
+    trade_signs = np.sign(
+        np.diff(market_making.history["mid"].to_numpy(), prepend=market_making.history["mid"].iloc[0])
+    )
     toxicity = adverse_selection_report(trade_signs, market_making.history["mid"].to_numpy(), horizon=1)
     imbalance = order_flow_imbalance(np.maximum(trade_signs, 0.0), np.maximum(-trade_signs, 0.0))
     vpin = volume_synchronized_pin(trade_signs, bucket_volume=5.0)
@@ -310,12 +331,18 @@ def run_full_demo(seed: int = 7) -> DemoSuiteResult:
     rl_summary = performance_summary(rl_backtest.history["equity"].to_numpy())
     risk_limited_backtest = run_policy(
         TradingEnv(benchmark_prices, transaction_cost_bps=1.0),
-        risk_limited_policy(constant_weight_policy(1.0), RiskLimits(max_leverage=1.0, max_drawdown=0.05, de_risk_weight=0.0)),
+        risk_limited_policy(
+            constant_weight_policy(1.0), RiskLimits(max_leverage=1.0, max_drawdown=0.05, de_risk_weight=0.0)
+        ),
     )
     realized_vol = float(np.std(np.diff(np.log(benchmark_prices)), ddof=1) * np.sqrt(252.0))
     vol_target = volatility_target_weight(1.0, realized_vol, target_volatility=0.12, max_leverage=1.5)
-    policy_search = grid_search_constant_weight_policy(benchmark_prices, candidate_weights=np.array([-1.0, 0.0, 0.5, 1.0]), transaction_cost_bps=1.0)
-    q_learning = train_tabular_q_learning(benchmark_prices, candidate_weights=np.array([-1.0, 0.0, 1.0]), episodes=25, epsilon=0.1, seed=seed)
+    policy_search = grid_search_constant_weight_policy(
+        benchmark_prices, candidate_weights=np.array([-1.0, 0.0, 0.5, 1.0]), transaction_cost_bps=1.0
+    )
+    q_learning = train_tabular_q_learning(
+        benchmark_prices, candidate_weights=np.array([-1.0, 0.0, 1.0]), episodes=25, epsilon=0.1, seed=seed
+    )
     policy_gradient = train_softmax_policy_gradient(
         benchmark_prices,
         candidate_weights=np.array([-1.0, 0.0, 1.0]),
@@ -343,14 +370,33 @@ def run_full_demo(seed: int = 7) -> DemoSuiteResult:
         replay_capacity=128,
         seed=seed,
     )
-    q_walk_forward = walk_forward_q_learning(benchmark_prices, train_size=80, test_size=40, candidate_weights=np.array([-1.0, 0.0, 1.0]), episodes=10, seed=seed)
+    q_walk_forward = walk_forward_q_learning(
+        benchmark_prices,
+        train_size=80,
+        test_size=40,
+        candidate_weights=np.array([-1.0, 0.0, 1.0]),
+        episodes=10,
+        seed=seed,
+    )
     portfolio_rl_prices = factor_panel.prices.iloc[:, :4]
     portfolio_constant = run_portfolio_policy(
-        PortfolioTradingEnv(portfolio_rl_prices, transaction_cost_bps=1.0, drawdown_penalty=0.05, volatility_penalty=0.01, volatility_window=20),
+        PortfolioTradingEnv(
+            portfolio_rl_prices,
+            transaction_cost_bps=1.0,
+            drawdown_penalty=0.05,
+            volatility_penalty=0.01,
+            volatility_window=20,
+        ),
         constant_mix_policy(np.full(portfolio_rl_prices.shape[1], 1.0 / portfolio_rl_prices.shape[1])),
     )
     portfolio_momentum = run_portfolio_policy(
-        PortfolioTradingEnv(portfolio_rl_prices, transaction_cost_bps=2.0, drawdown_penalty=0.05, volatility_penalty=0.01, volatility_window=20),
+        PortfolioTradingEnv(
+            portfolio_rl_prices,
+            transaction_cost_bps=2.0,
+            drawdown_penalty=0.05,
+            volatility_penalty=0.01,
+            volatility_window=20,
+        ),
         momentum_rotation_policy(lookback=20, top_n=2),
     )
 
@@ -414,8 +460,12 @@ def run_full_demo(seed: int = 7) -> DemoSuiteResult:
         risk_aversion=8.0,
     )
     bayesian_posterior = bayesian_return_posterior(factor_panel.asset_returns.to_numpy(), prior_strength=25.0)
-    bayesian_weights = bayesian_mean_variance_weights(factor_panel.asset_returns.to_numpy(), prior_strength=25.0, risk_aversion=8.0)
-    turnover_weights = turnover_constrained_mean_variance_weights(expected_returns, covariance, min_var, max_turnover=0.25, risk_aversion=8.0)
+    bayesian_weights = bayesian_mean_variance_weights(
+        factor_panel.asset_returns.to_numpy(), prior_strength=25.0, risk_aversion=8.0
+    )
+    turnover_weights = turnover_constrained_mean_variance_weights(
+        expected_returns, covariance, min_var, max_turnover=0.25, risk_aversion=8.0
+    )
     budget_weights = risk_budget_weights(covariance, np.full(covariance.shape[0], 1.0 / covariance.shape[0]))
     budget_contributions = portfolio_risk_contributions(budget_weights, covariance)
     frontier = efficient_frontier(
@@ -431,7 +481,9 @@ def run_full_demo(seed: int = 7) -> DemoSuiteResult:
         portfolio_value=1_000_000.0,
     )
     neutralized_weights = neutralize_portfolio_exposures(min_var_weights, style_exposures[["size", "momentum"]])
-    neutralized_style_exposure = style_exposures.loc[neutralized_weights.index, ["size", "momentum"]].T @ neutralized_weights
+    neutralized_style_exposure = (
+        style_exposures.loc[neutralized_weights.index, ["size", "momentum"]].T @ neutralized_weights
+    )
     mimicking = factor_mimicking_portfolios(style_exposures[["size", "momentum"]])
     portfolio_returns = factor_panel.asset_returns.to_numpy() @ min_var
     cvar_contrib = portfolio_cvar_contributions(factor_panel.asset_returns, min_var)
@@ -439,7 +491,9 @@ def run_full_demo(seed: int = 7) -> DemoSuiteResult:
     var_estimate = historical_var(portfolio_returns)
     var_backtest = kupiec_var_backtest(portfolio_returns, np.full_like(portfolio_returns, var_estimate))
     christoffersen = christoffersen_var_backtest(portfolio_returns, np.full_like(portfolio_returns, var_estimate))
-    traffic_light = basel_traffic_light(var_backtest.exceptions, observations=var_backtest.observations, confidence=0.95)
+    traffic_light = basel_traffic_light(
+        var_backtest.exceptions, observations=var_backtest.observations, confidence=0.95
+    )
     stress_scenarios = historical_stress_scenarios(factor_panel.asset_returns)
     portfolio_stress = stress_test_portfolio(min_var_weights, stress_scenarios, portfolio_value=1_000_000.0)
     attribution = factor_risk_attribution(
@@ -487,14 +541,18 @@ def run_full_demo(seed: int = 7) -> DemoSuiteResult:
     ranked_pairs = rank_cointegrated_pairs(stat_prices, network, max_p_value=0.05, top_n=2)
     top_pair_weights = candidate_spread_weights(ranked_pairs[0]) if ranked_pairs else pd.Series(dtype=float)
     pair_portfolio = (
-        backtest_pair_portfolio(stat_prices, ranked_pairs, entry_z=1.5, exit_z=0.25, window=30, total_gross=1.0, transaction_cost=0.001)
+        backtest_pair_portfolio(
+            stat_prices, ranked_pairs, entry_z=1.5, exit_z=0.25, window=30, total_gross=1.0, transaction_cost=0.001
+        )
         if ranked_pairs
         else None
     )
     basket_rng = np.random.default_rng(seed + 20_000)
     basket_prices = stat_prices[["PairA", "PairB"]].copy()
-    basket_prices["BasketC"] = 0.55 * basket_prices["PairA"] + 0.35 * basket_prices["PairB"] + basket_rng.normal(
-        0.0, 0.15, size=len(basket_prices)
+    basket_prices["BasketC"] = (
+        0.55 * basket_prices["PairA"]
+        + 0.35 * basket_prices["PairB"]
+        + basket_rng.normal(0.0, 0.15, size=len(basket_prices))
     )
     johansen_basket_backtest = backtest_johansen_basket_strategy(
         basket_prices,
@@ -507,7 +565,9 @@ def run_full_demo(seed: int = 7) -> DemoSuiteResult:
     johansen_vector = johansen_hedge_vector(stat_prices[["PairA", "PairB"]], normalize_asset="PairA")
     johansen_spread = basket_spread(stat_prices[["PairA", "PairB"]], johansen_vector)
     kalman = kalman_dynamic_hedge_ratio(stat_prices["PairB"], stat_prices["PairA"])
-    dynamic_backtest = backtest_kalman_spread_strategy(stat_prices["PairB"], stat_prices["PairA"], entry_z=1.5, exit_z=0.25, window=30, transaction_cost=0.001)
+    dynamic_backtest = backtest_kalman_spread_strategy(
+        stat_prices["PairB"], stat_prices["PairA"], entry_z=1.5, exit_z=0.25, window=30, transaction_cost=0.001
+    )
     signal = mean_reversion_signal(coint.spread, entry_z=1.5, exit_z=0.25, window=30)
     spread_backtest = backtest_spread_strategy(coint.spread, signal, transaction_cost=0.001)
 
@@ -588,21 +648,33 @@ def run_full_demo(seed: int = 7) -> DemoSuiteResult:
     exposure_times = np.array([0.5, 1.0, 2.0, 3.0, 5.0])
     exposure_rng = np.random.default_rng(seed + 10_000)
     exposure_base = np.array([180_000.0, 260_000.0, 240_000.0, 180_000.0, 80_000.0])
-    exposure_noise = exposure_rng.normal(0.0, np.array([80_000.0, 110_000.0, 130_000.0, 120_000.0, 90_000.0]), size=(1_000, len(exposure_times)))
+    exposure_noise = exposure_rng.normal(
+        0.0, np.array([80_000.0, 110_000.0, 130_000.0, 120_000.0, 90_000.0]), size=(1_000, len(exposure_times))
+    )
     exposure_paths = exposure_base + exposure_noise
     counterparty_profile = exposure_profile(exposure_times, exposure_paths, pfe_quantile=0.95)
     cva = unilateral_cva(counterparty_profile, hazard_curve, rate=0.03)
-    credit_stress_factor = np.interp(exposure_times, spread_curve["maturity"].to_numpy(), spread_curve["credit_spread"].to_numpy())
+    credit_stress_factor = np.interp(
+        exposure_times, spread_curve["maturity"].to_numpy(), spread_curve["credit_spread"].to_numpy()
+    )
     wrong_way_profile = wrong_way_adjusted_profile(counterparty_profile, credit_stress_factor, beta=0.35)
     wrong_way_cva = unilateral_cva(wrong_way_profile, hazard_curve, rate=0.03)
 
     exposures, capital = synthetic_exposure_network(seed=seed)
-    contagion = simulate_contagion(exposures.to_numpy().copy(), capital.to_numpy(), initial_defaults=[0], recovery_rate=0.4)
+    contagion = simulate_contagion(
+        exposures.to_numpy().copy(), capital.to_numpy(), initial_defaults=[0], recovery_rate=0.4
+    )
     clearing = eisenberg_noe_clearing(exposures.to_numpy(), capital.to_numpy())
-    debt_rank_result = debt_rank(exposures.to_numpy(), capital.to_numpy(), initial_distress=np.array([1.0, 0.0, 0.0, 0.0, 0.0]), damping=0.7)
+    debt_rank_result = debt_rank(
+        exposures.to_numpy(), capital.to_numpy(), initial_distress=np.array([1.0, 0.0, 0.0, 0.0, 0.0]), damping=0.7
+    )
     centrality = exposure_centrality(exposures.to_numpy(), names=list(exposures.index))
-    capital_requirements = systemic_capital_surcharge(centrality["systemic_share"], base_ratio=0.08, surcharge_scale=0.04)
-    capital_result = capital_adequacy(capital, exposures.sum(axis=1) + 100.0, minimum_ratio=float(capital_requirements.mean()))
+    capital_requirements = systemic_capital_surcharge(
+        centrality["systemic_share"], base_ratio=0.08, surcharge_scale=0.04
+    )
+    capital_result = capital_adequacy(
+        capital, exposures.sum(axis=1) + 100.0, minimum_ratio=float(capital_requirements.mean())
+    )
     systemic_holdings = np.array([[100.0, 40.0], [80.0, 20.0], [30.0, 90.0], [50.0, 50.0], [25.0, 75.0]])
     stress = external_asset_stress(
         holdings=systemic_holdings,
@@ -712,7 +784,9 @@ def run_full_demo(seed: int = 7) -> DemoSuiteResult:
             "policy_gradient_last_reward": float(policy_gradient.episode_rewards.iloc[-1]),
             "constrained_pg_last_adjusted_reward": float(constrained_policy_gradient.adjusted_episode_rewards.iloc[-1]),
             "constrained_pg_drawdown_lambda": float(constrained_policy_gradient.lagrange_multipliers["drawdown"]),
-            "constrained_pg_turnover_violation": float(constrained_policy_gradient.constraint_history["turnover_violation"].iloc[-1]),
+            "constrained_pg_turnover_violation": float(
+                constrained_policy_gradient.constraint_history["turnover_violation"].iloc[-1]
+            ),
             "deep_q_last_reward": float(deep_q.episode_rewards.iloc[-1]),
             "deep_q_last_loss": float(deep_q.training_losses.iloc[-1]),
             "deep_q_initial_action": float(deep_q.policy(TradingEnv(benchmark_prices).reset())),
@@ -814,7 +888,9 @@ def run_full_demo(seed: int = 7) -> DemoSuiteResult:
             "fitted_hazard_rate": float(hazard_fit.hazard_rate),
             "logistic_hazard_stressed": float(logistic_hazard.predict_hazard(stressed_credit_covariates).iloc[0]),
             "cox_hazard_ratio_stressed": float(cox_hazard.hazard_ratio(stressed_credit_covariates).iloc[0]),
-            "cox_three_year_default_probability": float(cox_hazard.default_probability(stressed_credit_covariates, 3.0).iloc[0]),
+            "cox_three_year_default_probability": float(
+                cox_hazard.default_probability(stressed_credit_covariates, 3.0).iloc[0]
+            ),
             "cir_default_probability": float(cir_intensity.default_probability),
             "cir_mean_survival_probability": float(cir_intensity.mean_survival_probability),
             "cir_terminal_intensity": float(cir_intensity.mean_terminal_intensity),

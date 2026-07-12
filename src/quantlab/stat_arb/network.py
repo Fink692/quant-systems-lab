@@ -37,7 +37,9 @@ def pairwise_cointegration_network(prices: pd.DataFrame, p_value_threshold: floa
     return CointegrationNetwork(adjacency=adjacency, p_values=p_values, hedge_ratios=hedge_ratios)
 
 
-def mean_reversion_signal(spread: np.ndarray, entry_z: float = 2.0, exit_z: float = 0.5, window: int = 60) -> np.ndarray:
+def mean_reversion_signal(
+    spread: np.ndarray, entry_z: float = 2.0, exit_z: float = 0.5, window: int = 60
+) -> np.ndarray:
     """Generate spread position signals: -1 short spread, +1 long spread, 0 flat."""
     if entry_z <= exit_z or exit_z < 0:
         raise ValueError("entry_z must be greater than exit_z >= 0")

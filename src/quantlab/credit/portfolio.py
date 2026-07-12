@@ -27,9 +27,15 @@ def gaussian_copula_default_losses(
     """Simulate credit portfolio losses with a one-factor Gaussian copula."""
     pds = np.asarray(default_probabilities, dtype=float)
     notionals = np.asarray(exposures, dtype=float)
-    recoveries = np.full_like(pds, float(recovery_rates)) if np.isscalar(recovery_rates) else np.asarray(recovery_rates, dtype=float)
+    recoveries = (
+        np.full_like(pds, float(recovery_rates))
+        if np.isscalar(recovery_rates)
+        else np.asarray(recovery_rates, dtype=float)
+    )
     if pds.ndim != 1 or notionals.shape != pds.shape or recoveries.shape != pds.shape:
-        raise ValueError("default_probabilities, exposures, and recovery_rates must have matching one-dimensional shapes")
+        raise ValueError(
+            "default_probabilities, exposures, and recovery_rates must have matching one-dimensional shapes"
+        )
     if np.any((pds <= 0) | (pds >= 1)) or np.any(notionals < 0) or np.any((recoveries < 0) | (recoveries > 1)):
         raise ValueError("invalid probabilities, exposures, or recoveries")
     if not 0 <= asset_correlation < 1 or simulations < 1 or not 0 < confidence < 1:

@@ -1,0 +1,18 @@
+site_name: Quant Systems Lab
+site_description: Reproducible quantitative-finance research systems
+repo_url: https://github.com/Fink692/quant-systems-lab
+theme:
+  name: readthedocs
+nav:
+  - Home: index.md
+  - Flagship market-making plan: FLAGSHIP_MARKET_MAKING_RESEARCH_PLAN.md
+  - Flagship architecture: FLAGSHIP_ARCHITECTURE.md
+  - Market-making case study: CASE_STUDY_MARKET_MAKING.md
+  - Data sources: DATA_SOURCES.md
+  - Valuation-regime research: RESEARCH_MEMO_VALUATION_REGIME.md
+  - Assumptions and limitations: ASSUMPTIONS_AND_LIMITATIONS.md
+  - Model cards: MODEL_CARDS.md
+  - Roadmap completion audit: ROADMAP_COMPLETION_AUDIT.md
+  - Five-minute demo: FIVE_MINUTE_DEMO.md
+docs_dir: docs
+site_dir: site
