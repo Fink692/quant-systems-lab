@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-from quantlab.data.synthetic import synthetic_factor_panel, synthetic_option_chain
+from quantlab.data.synthetic import synthetic_factor_panel
 from quantlab.options.black_scholes import black_scholes_price
 from quantlab.options.density import breeden_litzenberger_density, density_from_price_surface
 from quantlab.risk.style_factors import build_style_exposures, estimate_style_factor_returns

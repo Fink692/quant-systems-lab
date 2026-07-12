@@ -33,7 +33,9 @@ class HazardCurve:
         return float(self.hazard_rates[idx] * (1.0 - self.recovery_rate))
 
 
-def bootstrap_hazard_curve(maturities: np.ndarray, credit_spreads: np.ndarray, recovery_rate: float = 0.4) -> HazardCurve:
+def bootstrap_hazard_curve(
+    maturities: np.ndarray, credit_spreads: np.ndarray, recovery_rate: float = 0.4
+) -> HazardCurve:
     """Bootstrap a simple piecewise-constant hazard curve from flat CDS-style spreads."""
     maturities = np.asarray(maturities, dtype=float)
     spreads = np.asarray(credit_spreads, dtype=float)

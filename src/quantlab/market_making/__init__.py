@@ -1,7 +1,7 @@
 """Limit order book and market-making components."""
 
-from quantlab.market_making.avellaneda_stoikov import AvellanedaStoikovParams, optimal_quotes
 from quantlab.market_making.attribution import MarketMakingPnLAttribution, attribute_market_making_pnl
+from quantlab.market_making.avellaneda_stoikov import AvellanedaStoikovParams, optimal_quotes
 from quantlab.market_making.book_simulator import OrderBookMarketMakingResult, simulate_order_book_market_maker
 from quantlab.market_making.execution import ExecutionModelParams, expected_execution_value, fill_probability
 from quantlab.market_making.fill_calibration import FillIntensityCalibration, calibrate_fill_intensity
@@ -12,13 +12,22 @@ from quantlab.market_making.hawkes import (
     hawkes_stability_radius,
     simulate_hawkes_order_flow,
 )
-from quantlab.market_making.inventory import InventoryDiagnostics, inventory_diagnostics, inventory_skew_quote_adjustment
+from quantlab.market_making.inventory import (
+    InventoryDiagnostics,
+    inventory_diagnostics,
+    inventory_skew_quote_adjustment,
+)
 from quantlab.market_making.latency import LatencySlippageResult, latency_slippage_report
 from quantlab.market_making.limit_order_book import LimitOrderBook
 from quantlab.market_making.path_simulator import PathMarketMakingResult, simulate_latency_market_maker_on_path
 from quantlab.market_making.queue import QueueSimulationResult, simulate_queue_position
 from quantlab.market_making.simulator import MarketMakingSimulationResult, simulate_market_maker
-from quantlab.market_making.toxicity import AdverseSelectionReport, adverse_selection_report, order_flow_imbalance, volume_synchronized_pin
+from quantlab.market_making.toxicity import (
+    AdverseSelectionReport,
+    adverse_selection_report,
+    order_flow_imbalance,
+    volume_synchronized_pin,
+)
 
 __all__ = [
     "AdverseSelectionReport",

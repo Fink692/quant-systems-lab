@@ -6,6 +6,10 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+ORDER_BOOK_EVENT_SCHEMA_VERSION = "1.0.0"
+ORDER_BOOK_EVENT_TYPES = frozenset({"add", "cancel", "modify", "trade"})
+ORDER_BOOK_SIDES = frozenset({"bid", "ask"})
+
 
 @dataclass(frozen=True)
 class DataValidationResult:
@@ -122,6 +126,83 @@ def load_credit_spread_curve_csv(path: str | Path) -> pd.DataFrame:
     if not result.is_valid:
         raise ValueError("; ".join(result.issues))
     return frame.astype({"maturity": float, "credit_spread": float})
+
+
+def validate_order_book_events(events: pd.DataFrame, tick_size: float | None = None) -> DataValidationResult:
+    """Validate the canonical, event-ordered L2/L3 market-data contract.
+
+    ``order_id`` is optional so the same contract can represent aggregated L2
+    updates and order-level L3 messages. Timestamps are integer nanoseconds in
+    UTC; converting exchange-local timestamps is an ingestion responsibility.
+    """
+    required = {"timestamp_ns", "sequence_number", "event_type", "side", "price", "quantity"}
+    issues: list[str] = []
+    missing = required - set(events.columns)
+    if missing:
+        issues.append(f"missing columns: {sorted(missing)}")
+        return _result(events, issues)
+    if events.empty:
+        issues.append("order-book event stream is empty")
+        return _result(events, issues)
+
+    timestamp = pd.to_numeric(events["timestamp_ns"], errors="coerce")
+    sequence = pd.to_numeric(events["sequence_number"], errors="coerce")
+    price = pd.to_numeric(events["price"], errors="coerce")
+    quantity = pd.to_numeric(events["quantity"], errors="coerce")
+    if pd.concat([timestamp, sequence, price, quantity], axis=1).isna().any().any():
+        issues.append("timestamp_ns, sequence_number, price, and quantity must be numeric and complete")
+    else:
+        if (timestamp < 0).any() or not np.equal(timestamp, np.floor(timestamp)).all():
+            issues.append("timestamp_ns must contain non-negative integers")
+        if (sequence < 0).any() or not np.equal(sequence, np.floor(sequence)).all():
+            issues.append("sequence_number must contain non-negative integers")
+        if not timestamp.is_monotonic_increasing:
+            issues.append("timestamp_ns must be non-decreasing")
+        if not sequence.is_monotonic_increasing or sequence.duplicated().any():
+            issues.append("sequence_number must be strictly increasing")
+        if (price <= 0).any():
+            issues.append("price must be positive")
+        if (quantity <= 0).any():
+            issues.append("quantity must be positive")
+        if tick_size is not None:
+            if tick_size <= 0:
+                issues.append("tick_size must be positive")
+            else:
+                visible = (
+                    events["applies_to_visible_book"].astype(bool)
+                    if "applies_to_visible_book" in events
+                    else pd.Series(True, index=events.index)
+                )
+                visible_price = price.loc[visible]
+                if not np.allclose(visible_price / tick_size, np.round(visible_price / tick_size), atol=1e-8, rtol=0.0):
+                    issues.append("visible-book price must lie on the configured tick grid")
+
+    event_types = set(events["event_type"].astype(str))
+    if not event_types.issubset(ORDER_BOOK_EVENT_TYPES):
+        issues.append(f"event_type must contain only {sorted(ORDER_BOOK_EVENT_TYPES)}")
+    sides = set(events["side"].astype(str))
+    if not sides.issubset(ORDER_BOOK_SIDES):
+        issues.append(f"side must contain only {sorted(ORDER_BOOK_SIDES)}")
+    if "receive_timestamp_ns" in events:
+        receive_timestamp = pd.to_numeric(events["receive_timestamp_ns"], errors="coerce")
+        if receive_timestamp.isna().any():
+            issues.append("receive_timestamp_ns must be numeric and complete when present")
+        elif (receive_timestamp < timestamp).any():
+            issues.append("receive_timestamp_ns must not precede timestamp_ns")
+    return _result(events, issues)
+
+
+def load_order_book_events_csv(path: str | Path, tick_size: float | None = None) -> pd.DataFrame:
+    """Load canonical L2/L3 events without allowing lossy timestamp coercion."""
+    frame = pd.read_csv(path, dtype={"timestamp_ns": "Int64", "sequence_number": "Int64"})
+    result = validate_order_book_events(frame, tick_size=tick_size)
+    if not result.is_valid:
+        raise ValueError("; ".join(result.issues))
+    frame["timestamp_ns"] = frame["timestamp_ns"].astype("int64")
+    frame["sequence_number"] = frame["sequence_number"].astype("int64")
+    frame["price"] = frame["price"].astype(float)
+    frame["quantity"] = frame["quantity"].astype(float)
+    return frame
 
 
 def _result(frame: pd.DataFrame, issues: list[str]) -> DataValidationResult:

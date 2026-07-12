@@ -4,8 +4,8 @@ import pandas as pd
 from quantlab.credit.tranches import tranche_loss_distribution
 from quantlab.market_making.latency import latency_slippage_report
 from quantlab.portfolio.drawdown import conditional_drawdown_at_risk, portfolio_drawdown_summary
-from quantlab.rl.risk_controls import RiskLimits, apply_risk_limits, risk_limited_policy, volatility_target_weight
 from quantlab.rl.evaluation import constant_weight_policy
+from quantlab.rl.risk_controls import RiskLimits, apply_risk_limits, risk_limited_policy, volatility_target_weight
 from quantlab.rl.trading_env import TradingState
 from quantlab.systemic.liquidity import simulate_liquidity_spiral
 from quantlab.workflows.demo_suite import run_full_demo
@@ -30,7 +30,9 @@ def test_risk_limits_and_volatility_targeting():
     assert decision.limited
 
     breached = TradingState(time_index=4, price=100.0, position=0.0, cash=90.0, equity=90.0, peak_equity=100.0)
-    limited_policy = risk_limited_policy(constant_weight_policy(1.0), RiskLimits(max_leverage=1.0, max_drawdown=0.05, de_risk_weight=0.0))
+    limited_policy = risk_limited_policy(
+        constant_weight_policy(1.0), RiskLimits(max_leverage=1.0, max_drawdown=0.05, de_risk_weight=0.0)
+    )
     assert limited_policy(breached) == 0.0
     assert volatility_target_weight(1.0, realized_volatility=0.24, target_volatility=0.12, max_leverage=2.0) == 0.5
 

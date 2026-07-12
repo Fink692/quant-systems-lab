@@ -1,17 +1,61 @@
 # Quant Systems Lab
 
 [![CI](https://github.com/Fink692/quant-systems-lab/actions/workflows/ci.yml/badge.svg)](https://github.com/Fink692/quant-systems-lab/actions/workflows/ci.yml)
+[![Reproduce market making](https://github.com/Fink692/quant-systems-lab/actions/workflows/reproduce-market-making.yml/badge.svg)](https://github.com/Fink692/quant-systems-lab/actions/workflows/reproduce-market-making.yml)
 
-Quant Systems Lab is a Python research platform that implements ten advanced quantitative-finance systems in one tested package: stochastic-volatility options, limit-order-book market making, constrained RL trading, Barra-style factor risk, robust portfolio optimization, rough volatility, statistical arbitrage, credit risk, volatility-surface arbitrage, and systemic-risk networks.
+Quant Systems Lab is a Python quantitative-research platform centered on a real-data, queue-aware market-making study. It also contains tested implementations of stochastic-volatility options, constrained RL trading, factor risk, robust portfolio optimization, rough volatility, statistical arbitrage, credit risk, volatility-surface arbitrage, and systemic-risk networks.
 
-The project is designed as resume/interview evidence for applied mathematical finance work. It is not a toy trading bot: the code separates pricing models, calibration routines, simulation engines, portfolio/risk analytics, execution models, and reproducible workflows under `src/quantlab`.
+The flagship pipeline ingests real NASDAQ-derived order-book messages, validates provenance, reconstructs and reconciles the book, calibrates market descriptors, and compares five policies on a chronological held-out interval with explicit queue position, latency, fees, inventory limits, adverse selection, liquidation, and independent PnL accounting.
 
 ## Why This Project Matters
 
-- Covers derivatives pricing, market microstructure, reinforcement learning, econometrics, credit modeling, network contagion, and convex-style portfolio construction.
-- Uses deterministic synthetic-data workflows so every major model family can be tested without paid data, plus a real S&P 500 valuation-regime study with sourced market data.
-- Includes a CLI and report generator, making the package demonstrable from a terminal instead of only from isolated functions.
-- Ships with 173 tests covering model behavior, calibration routines, risk diagnostics, workflow integration, real-data walk-forward research, and CLI outputs.
+- Uses immutable experiment configurations, dataset hashes, append-only run records, chronological splits, and accounting invariants.
+- Preserves negative results: all five policies lose money on the public sample, and the repository explicitly avoids presenting one session as persistent alpha.
+- Includes deterministic synthetic workflows for model correctness plus real order-book and S&P 500 research paths.
+- Ships with 195 tests, 88% measured coverage with an 85% CI floor, Python 3.11-3.13 CI, Ruff, Black, MyPy, dependency auditing, pre-commit, documentation builds, and benchmark regression checks.
+
+## Flagship Result: Real-Data Market Making
+
+The reproducible public-sample study processes 301,587 synchronized AAPL messages and Level-5 book states. Reconstruction exactly matches 89.17% of synchronized states; the remaining Level-5 boundary mismatches are counted and reseeded rather than hidden. Validation selects the queue assumption before the held-out comparison.
+
+| Policy | Test net PnL | Max absolute inventory | Max drawdown |
+| --- | ---: | ---: | ---: |
+| Fixed spread | -130.63 | 99 | 142.23 |
+| Avellaneda-Stoikov | -98.88 | 91 | 117.22 |
+| Queue aware | -67.80 | 76 | 90.81 |
+| Toxicity aware | -47.34 | 52 | 71.01 |
+| Latency aware | -47.34 | 52 | 71.01 |
+
+This is a pipeline-validation result, not a profitability claim. The next empirical gate is licensed multi-session L2/L3 data with true receive timestamps.
+
+```bash
+python -m pip install -e ".[dev,research]"
+make fetch-order-book-data
+make reproduce-market-making-sample
+make market-making-notebook
+make market-making-paper
+make market-making-video
+```
+
+Artifacts:
+
+- [Research paper PDF](output/pdf/queue_aware_market_making_sample_paper.pdf)
+- [One-page tear sheet](output/pdf/queue_aware_market_making_tear_sheet.pdf)
+- [Narrated research demo](output/video/queue_aware_market_making_demo.mp4)
+- [Executed start-here notebook](notebooks/start_here_market_making.ipynb)
+- [Generated study](reports/market_making_sample/study.md)
+- [Data-quality report](reports/market_making_sample/data_quality.md)
+- [Architecture](docs/FLAGSHIP_ARCHITECTURE.md)
+- [Assumptions and limitations](docs/ASSUMPTIONS_AND_LIMITATIONS.md)
+- [Model cards](docs/MODEL_CARDS.md)
+- [Roadmap completion audit](docs/ROADMAP_COMPLETION_AUDIT.md)
+- [Five-minute demo runbook](docs/FIVE_MINUTE_DEMO.md)
+
+Launch the interactive dashboard after installing `.[dashboard]`:
+
+```bash
+make market-making-dashboard
+```
 
 ## System Coverage
 
@@ -42,9 +86,10 @@ src/quantlab/
   credit/           Structural/reduced-form credit risk, CVA, portfolios
   systemic/         Network contagion, clearing, capital, liquidity stress
   data/             Synthetic datasets and schema-checked loaders
+  market_data/      Provider adapters, manifests, reconstruction, reconciliation
   workflows/        End-to-end deterministic demo suite
   reporting/        Markdown report generation
-  research/         Real-data walk-forward allocation studies
+  research/         Frozen configs, registries, calibration, chronological studies
 ```
 
 Tests live in `tests/` and are intentionally broad: most modules are exercised both directly and through workflow-level smoke tests.
@@ -52,7 +97,7 @@ Tests live in `tests/` and are intentionally broad: most modules are exercised b
 ## Quick Start
 
 ```powershell
-python -m pip install -e .[dev]
+python -m pip install -e ".[dev,research]"
 pytest
 quantlab demo-suite --seed 7
 ```
@@ -73,7 +118,7 @@ quantlab data-demo --seed 7
 quantlab demo-report --seed 7 --output examples/demo_report_seed7.md
 ```
 
-## Real-Data Research Study
+## Valuation-Regime Research Study
 
 The repo now includes a reproducible S&P 500 valuation-regime allocation study using the DataHub/Shiller monthly dataset.
 
@@ -89,22 +134,23 @@ Artifacts:
 - [Data source notes](docs/DATA_SOURCES.md)
 - [Hiring readiness audit](docs/HIRING_READINESS_AUDIT.md)
 
-The study uses train/validation/test walk-forward folds, lagged valuation signals, transaction costs, slippage, volatility targeting, drawdown controls, regime breakdowns, stress tests, and cost robustness checks. It is intentionally honest: the strategy improves risk-adjusted behavior and reduces beta in this sample, but does not beat buy-and-hold S&P 500 CAGR.
+The study uses train/validation/test walk-forward folds through September 2023, lagged valuation signals, transaction costs, slippage, volatility targeting, drawdown controls, block-bootstrap confidence intervals, deflated Sharpe, a fold-based probability-of-overfitting diagnostic, parameter-stability tables, a bond-sleeve scenario, and 60/40, volatility-targeted, volatility-matched, and beta-matched baselines. It is intentionally honest: the strategy reduces equity risk, but does not beat buy-and-hold CAGR or the simpler risk-matched baselines on Sharpe and drawdown.
 
 ## Verification
 
 Current local verification:
 
 ```text
-173 passed
+195 passed; 88.54% coverage
 ```
 
-GitHub Actions runs the same `pytest` suite on every push and pull request to `main`.
+GitHub Actions runs formatting, linting, scoped static typing, strict documentation builds, dependency auditing, coverage, and the complete test suite across Python 3.11, 3.12, and 3.13.
 
 ## Example Output
 
 - [Demo report, seed 7](examples/demo_report_seed7.md)
 - [Market-making case study](docs/CASE_STUDY_MARKET_MAKING.md)
+- [Flagship real-data market-making research plan](docs/FLAGSHIP_MARKET_MAKING_RESEARCH_PLAN.md)
 - [Real-data valuation-regime study](docs/RESEARCH_MEMO_VALUATION_REGIME.md)
 - [Valuation-regime tear sheet](reports/valuation_regime_study.md)
 - [Real-data-compatible price panel workflow](docs/REAL_DATA_WORKFLOW.md)
@@ -125,11 +171,11 @@ These charts are generated from the package with `python examples/generate_resum
 
 ## Resume Summary
 
-Built a tested Python quant-finance research platform covering stochastic-volatility options, market making, risk-constrained RL, Barra-style factor risk, robust portfolio optimization, credit/default modeling, statistical arbitrage, volatility-surface arbitrage, systemic-risk contagion, and a real-data S&P 500 valuation-regime walk-forward study; packaged with CLI workflows, Docker/Make reproducibility, markdown reports, and 173 automated tests.
+Built a 195-test Python quant-finance research platform centered on a real-data queue-aware market-making study with event-level ingestion, reconstruction, chronological evaluation, latency/queue/fee sensitivity, immutable experiment provenance, independent PnL reconciliation, and five-policy comparison; supported by derivatives, portfolio, risk, credit, statistical-arbitrage, RL, and systemic-risk modules.
 
 ## Limitations and Next Extensions
 
-The repository is research-grade scaffolding with deterministic synthetic datasets for model correctness and one real-data allocation study for research workflow evidence. Production deployment would require live data connectors, execution-system integration, parameter governance, model-risk documentation, and independent calibration validation against broader real market datasets.
+The included public order-book sample covers one session and five visible levels, has no distinct receive timestamp, and cannot establish persistent profitability. A flagship empirical claim still requires licensed multi-session data, true receive times, provider-specific reconciliation, and a later untouched test period. Production deployment would additionally require exchange connectivity, operational controls, and independent model validation.
 
 ## License
 

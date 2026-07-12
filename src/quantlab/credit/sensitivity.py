@@ -40,8 +40,12 @@ def zero_coupon_spread_sensitivity(
     if spread_bump_bps <= 0:
         raise ValueError("spread_bump_bps must be positive")
     base = risky_zero_coupon_price(maturity, rate, hazard_curve, face_value=face_value)
-    up = risky_zero_coupon_price(maturity, rate, shift_hazard_curve_by_spread(hazard_curve, spread_bump_bps), face_value=face_value)
-    down = risky_zero_coupon_price(maturity, rate, shift_hazard_curve_by_spread(hazard_curve, -spread_bump_bps), face_value=face_value)
+    up = risky_zero_coupon_price(
+        maturity, rate, shift_hazard_curve_by_spread(hazard_curve, spread_bump_bps), face_value=face_value
+    )
+    down = risky_zero_coupon_price(
+        maturity, rate, shift_hazard_curve_by_spread(hazard_curve, -spread_bump_bps), face_value=face_value
+    )
     return _spread_sensitivity(base, up, down, spread_bump_bps)
 
 

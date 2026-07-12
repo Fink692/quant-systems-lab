@@ -54,4 +54,6 @@ def eisenberg_noe_clearing(
     incoming = relative.T @ payments
     equity = external_assets + incoming - payments
     defaulted = payments + tolerance < total_liabilities
-    return ClearingResult(payments=payments, equity=equity, defaulted=defaulted, iterations=iteration, converged=converged)
+    return ClearingResult(
+        payments=payments, equity=equity, defaulted=defaulted, iterations=iteration, converged=converged
+    )

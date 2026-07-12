@@ -33,10 +33,7 @@ def test_dupire_local_volatility_recovers_flat_black_scholes_surface():
     maturities = np.array([0.5, 1.0, 1.5, 2.0, 2.5])
     strikes = np.linspace(75.0, 125.0, 11)
     prices = np.array(
-        [
-            [black_scholes_price(100.0, strike, maturity, 0.02, 0.22) for strike in strikes]
-            for maturity in maturities
-        ]
+        [[black_scholes_price(100.0, strike, maturity, 0.02, 0.22) for strike in strikes] for maturity in maturities]
     )
     local_vol = dupire_local_volatility(maturities, strikes, prices, rate=0.02)
     interior = local_vol[1:-1, 2:-2]

@@ -4,7 +4,11 @@ import argparse
 import json
 from pathlib import Path
 
-from quantlab.research.valuation_regime import ValuationRegimeConfig, load_shiller_sp500_csv, run_valuation_regime_walk_forward
+from quantlab.research.valuation_regime import (
+    ValuationRegimeConfig,
+    load_shiller_sp500_csv,
+    run_valuation_regime_walk_forward,
+)
 
 
 def run_study(
@@ -28,6 +32,10 @@ def run_study(
         "average_turnover": float(result.tear_sheet.metrics["average_turnover"]),
         "total_cost": float(result.tear_sheet.metrics["total_cost"]),
         "positive_cost_scenarios": int(result.robustness.positive_cost_scenarios),
+        "deflated_sharpe_probability": float(result.diagnostics.overfitting_metrics["deflated_sharpe_probability"]),
+        "probability_backtest_overfitting": float(
+            result.diagnostics.overfitting_metrics["probability_backtest_overfitting"]
+        ),
     }
     if output is not None:
         Path(output).parent.mkdir(parents=True, exist_ok=True)
@@ -46,8 +54,52 @@ def _render_markdown(result) -> str:
     ]
     for key, value in result.tear_sheet.metrics.items():
         lines.append(f"- **{key.replace('_', ' ').title()}**: {value:.6g}")
-    lines.extend(["", "## Walk-Forward Folds", "", _table(result.folds), "", "## Cost Robustness", "", _table(result.robustness.grid), ""])
-    lines.extend(["## Regime Breakdown", "", _table(result.tear_sheet.regime_breakdown.reset_index()), "", "## Stress Tests", "", _table(result.tear_sheet.stress_tests.reset_index()), ""])
+    lines.extend(
+        [
+            "",
+            "## Walk-Forward Folds",
+            "",
+            _table(result.folds),
+            "",
+            "## Cost Robustness",
+            "",
+            _table(result.robustness.grid),
+            "",
+            "## Risk-Matched and Simple Baselines",
+            "",
+            _table(result.diagnostics.baseline_comparison.reset_index()),
+            "",
+            "## Bootstrap Confidence Intervals",
+            "",
+            _table(result.diagnostics.bootstrap_confidence_intervals.reset_index()),
+            "",
+            "## Overfitting Diagnostics",
+            "",
+        ]
+    )
+    for key, value in result.diagnostics.overfitting_metrics.items():
+        lines.append(f"- **{key.replace('_', ' ').title()}**: {value:.6g}")
+    lines.extend(
+        [
+            "",
+            "## Parameter Stability",
+            "",
+            _table(result.diagnostics.parameter_stability),
+            "",
+        ]
+    )
+    lines.extend(
+        [
+            "## Regime Breakdown",
+            "",
+            _table(result.tear_sheet.regime_breakdown.reset_index()),
+            "",
+            "## Stress Tests",
+            "",
+            _table(result.tear_sheet.stress_tests.reset_index()),
+            "",
+        ]
+    )
     return "\n".join(lines)
 
 

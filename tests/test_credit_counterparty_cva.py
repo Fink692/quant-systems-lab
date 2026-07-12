@@ -1,6 +1,11 @@
 import numpy as np
 
-from quantlab.credit.counterparty import exposure_profile, netting_set_exposure_profile, unilateral_cva, wrong_way_adjusted_profile
+from quantlab.credit.counterparty import (
+    exposure_profile,
+    netting_set_exposure_profile,
+    unilateral_cva,
+    wrong_way_adjusted_profile,
+)
 from quantlab.credit.curve import HazardCurve, bootstrap_hazard_curve
 from quantlab.workflows.demo_suite import run_full_demo
 

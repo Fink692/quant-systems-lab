@@ -43,12 +43,12 @@ A tested Python quant-finance platform implementing ten advanced institutional m
 - Real-data-compatible workflow: `examples/run_price_panel_example.py`
 - Research memo: `docs/RESEARCH_MEMO_VALUATION_REGIME.md`
 - Hiring readiness audit: `docs/HIRING_READINESS_AUDIT.md`
-- Current local verification: `173 passed`
+- Current local verification: `195 passed`, 88.54% coverage
 - Continuous integration: `.github/workflows/ci.yml`
 
 ## Resume Bullet
 
-Built Quant Systems Lab, a tested Python platform implementing stochastic-volatility options pricing, queue-aware market making, risk-constrained RL trading, Barra-style factor risk, robust portfolio optimization, credit/default models, statistical arbitrage, volatility-surface arbitrage, systemic-risk contagion, and a real-data S&P 500 valuation-regime walk-forward study, with CLI workflows, Docker/Make reproducibility, Markdown reports, and 173 automated tests.
+Built Quant Systems Lab, a 193-test Python platform centered on a real-data queue-aware market-making study with event ingestion, reconstruction, chronological evaluation, latency/queue/fee sensitivity, immutable provenance, and independent PnL reconciliation, supported by derivatives, portfolio, risk, credit, statistical-arbitrage, RL, and systemic-risk modules.
 
 ## Interview Talking Points
 

@@ -1,0 +1,115 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Fink692/quant-systems-lab/blob/main/config/market_making_flagship.schema.json",
+  "title": "Queue-aware market-making flagship experiment",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "experiment_id", "random_seed", "dataset", "periods", "strategies", "sensitivity", "cost_model", "execution", "strategy_parameters", "evaluation"],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "experiment_id": {"type": "string", "minLength": 1},
+    "random_seed": {"type": "integer", "minimum": 0},
+    "dataset": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["provider", "dataset_id", "sha256", "schema_version", "book_level", "venue", "symbol", "tick_size", "timezone"],
+      "properties": {
+        "provider": {"type": "string", "minLength": 1},
+        "dataset_id": {"type": "string", "minLength": 1},
+        "sha256": {"type": "string", "pattern": "^[0-9a-fA-F]{64}$"},
+        "schema_version": {"const": "1.0.0"},
+        "book_level": {"enum": ["L2", "L3"]},
+        "venue": {"type": "string", "minLength": 1},
+        "symbol": {"type": "string", "minLength": 1},
+        "tick_size": {"type": "number", "exclusiveMinimum": 0},
+        "timezone": {"const": "UTC"}
+      }
+    },
+    "periods": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["train", "validation", "test"],
+      "properties": {
+        "train": {"$ref": "#/$defs/period"},
+        "validation": {"$ref": "#/$defs/period"},
+        "test": {"$ref": "#/$defs/period"}
+      }
+    },
+    "strategies": {
+      "type": "array",
+      "uniqueItems": true,
+      "minItems": 5,
+      "maxItems": 5,
+      "items": {"enum": ["fixed_spread", "avellaneda_stoikov", "queue_aware", "toxicity_aware", "latency_aware"]}
+    },
+    "sensitivity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["latency_ns", "queue_ahead_fraction", "fee_multiplier"],
+      "properties": {
+        "latency_ns": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "integer", "minimum": 0}},
+        "queue_ahead_fraction": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "number", "minimum": 0, "maximum": 1}},
+        "fee_multiplier": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "number", "exclusiveMinimum": 0}}
+      }
+    },
+    "cost_model": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["maker_fee_bps", "taker_fee_bps", "fixed_fee_per_order"],
+      "properties": {
+        "maker_fee_bps": {"type": "number"},
+        "taker_fee_bps": {"type": "number"},
+        "fixed_fee_per_order": {"type": "number", "minimum": 0}
+      }
+    },
+    "execution": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["order_size", "inventory_limit", "quote_interval_ns", "toxicity_window", "volatility_window", "adverse_horizon_ns", "record_every"],
+      "properties": {
+        "order_size": {"type": "number", "exclusiveMinimum": 0},
+        "inventory_limit": {"type": "number", "exclusiveMinimum": 0},
+        "quote_interval_ns": {"type": "integer", "minimum": 1},
+        "toxicity_window": {"type": "integer", "minimum": 1},
+        "volatility_window": {"type": "integer", "minimum": 2},
+        "adverse_horizon_ns": {"type": "integer", "minimum": 1},
+        "record_every": {"type": "integer", "minimum": 1}
+      }
+    },
+    "strategy_parameters": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["fixed_half_spread_ticks", "avellaneda_risk_aversion", "avellaneda_liquidity", "avellaneda_horizon", "inventory_skew_ticks", "toxicity_threshold", "max_toxicity_widen_ticks"],
+      "properties": {
+        "fixed_half_spread_ticks": {"type": "number", "exclusiveMinimum": 0},
+        "avellaneda_risk_aversion": {"type": "number", "exclusiveMinimum": 0},
+        "avellaneda_liquidity": {"type": "number", "exclusiveMinimum": 0},
+        "avellaneda_horizon": {"type": "number", "exclusiveMinimum": 0},
+        "inventory_skew_ticks": {"type": "number", "minimum": 0},
+        "toxicity_threshold": {"type": "number", "minimum": 0},
+        "max_toxicity_widen_ticks": {"type": "number", "minimum": 0}
+      }
+    },
+    "evaluation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["embargo_ns", "bootstrap_replicates", "bootstrap_block_size"],
+      "properties": {
+        "embargo_ns": {"type": "integer", "minimum": 0},
+        "bootstrap_replicates": {"type": "integer", "minimum": 2},
+        "bootstrap_block_size": {"type": "integer", "minimum": 1}
+      }
+    }
+  },
+  "$defs": {
+    "period": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["start", "end"],
+      "properties": {
+        "start": {"type": "string", "format": "date-time"},
+        "end": {"type": "string", "format": "date-time"}
+      }
+    }
+  }
+}

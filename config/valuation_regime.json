@@ -2,6 +2,7 @@
   "train_months": 120,
   "validation_months": 36,
   "test_months": 36,
+  "minimum_test_months": 12,
   "step_months": 36,
   "cheap_percentiles": [0.25, 0.35, 0.45],
   "expensive_percentiles": [0.65, 0.75, 0.85],
@@ -14,5 +15,8 @@
   "derisk_exposure": 0.25,
   "transaction_cost_bps": 5.0,
   "slippage_bps": 2.0,
-  "volatility_lookback": 12
+  "volatility_lookback": 12,
+  "bootstrap_replicates": 500,
+  "bootstrap_block_months": 12,
+  "random_seed": 12
 }

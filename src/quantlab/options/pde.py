@@ -29,7 +29,6 @@ def black_scholes_finite_difference_price(
         raise ValueError("spot_steps must be >= 4 and time_steps must be positive")
 
     s_max = max(spot, strike) * spot_max_multiplier
-    d_s = s_max / spot_steps
     dt = maturity / time_steps
     grid = np.linspace(0.0, s_max, spot_steps + 1)
 

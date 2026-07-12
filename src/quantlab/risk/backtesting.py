@@ -53,8 +53,12 @@ def kupiec_var_backtest(returns: np.ndarray, var_estimates: np.ndarray, confiden
         statistic = 0.0
         p_value = 1.0
     else:
-        log_likelihood_null = (observations - exceptions) * np.log(1.0 - expected_probability) + exceptions * np.log(expected_probability)
-        log_likelihood_alt = (observations - exceptions) * np.log(1.0 - observed_probability) + exceptions * np.log(observed_probability)
+        log_likelihood_null = (observations - exceptions) * np.log(1.0 - expected_probability) + exceptions * np.log(
+            expected_probability
+        )
+        log_likelihood_alt = (observations - exceptions) * np.log(1.0 - observed_probability) + exceptions * np.log(
+            observed_probability
+        )
         statistic = -2.0 * (log_likelihood_null - log_likelihood_alt)
         p_value = 1.0 - chi2.cdf(statistic, df=1)
     return VaRBacktestResult(observations, exceptions, float(observed_probability), float(statistic), float(p_value))
@@ -124,7 +128,9 @@ def basel_traffic_light(exceptions: int, observations: int = 250, confidence: fl
     )
 
 
-def _validate_var_inputs(returns: np.ndarray, var_estimates: np.ndarray, confidence: float) -> tuple[np.ndarray, np.ndarray]:
+def _validate_var_inputs(
+    returns: np.ndarray, var_estimates: np.ndarray, confidence: float
+) -> tuple[np.ndarray, np.ndarray]:
     returns = np.asarray(returns, dtype=float)
     var_estimates = np.asarray(var_estimates, dtype=float)
     if returns.ndim != 1 or var_estimates.shape != returns.shape:

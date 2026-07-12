@@ -1,0 +1,26 @@
+{
+  "crossed_snapshots": 0,
+  "duplicate_sequences": 0,
+  "duplicate_timestamps": 14194,
+  "duration_hours": 6.4999746879058335,
+  "event_counts": {
+    "delete": 120451,
+    "hidden_execution": 11332,
+    "partial_cancel": 2324,
+    "submission": 143822,
+    "visible_execution": 23658
+  },
+  "invalid_cancels": 0,
+  "median_spread": 0.14999999999997726,
+  "median_top_depth": 205.0,
+  "messages": 301587,
+  "non_monotonic_timestamps": 0,
+  "p99_spread": 0.37000000000000455,
+  "reconstruction_match_rate": 0.8916627429655223,
+  "reconstruction_mismatches": 32673,
+  "sequence_gaps": 0,
+  "session_date": "2012-06-21",
+  "snapshots": 301587,
+  "status": "pass",
+  "symbol": "AAPL"
+}

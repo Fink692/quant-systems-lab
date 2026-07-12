@@ -26,7 +26,11 @@ class SurfaceStabilityReport:
 
     @property
     def passes(self) -> bool:
-        return self.invalid_implied_vol_count == 0 and len(self.arbitrage_violations) == 0 and self.local_vol_nan_fraction < 0.25
+        return (
+            self.invalid_implied_vol_count == 0
+            and len(self.arbitrage_violations) == 0
+            and self.local_vol_nan_fraction < 0.25
+        )
 
 
 def diagnose_surface_interpolation_stability(

@@ -43,7 +43,9 @@ def simulate_fire_sale(
         equity = capital + holdings @ prices - initial_asset_value
         newly_defaulted = (equity < 0.0) & ~defaulted
         if not np.any(newly_defaulted):
-            return FireSaleResult(prices=prices, equity=equity, defaulted=defaulted, rounds=round_idx - 1, history=history)
+            return FireSaleResult(
+                prices=prices, equity=equity, defaulted=defaulted, rounds=round_idx - 1, history=history
+            )
         defaulted |= newly_defaulted
         liquidation = liquidation_fraction * holdings[newly_defaulted].sum(axis=0)
         prices = np.maximum(prices - impact * liquidation, 0.0)

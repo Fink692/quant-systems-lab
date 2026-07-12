@@ -171,7 +171,9 @@ def detect_surface_arbitrage(
     )
 
 
-def _validate_surface(maturities: np.ndarray, strikes: np.ndarray, call_prices: np.ndarray) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+def _validate_surface(
+    maturities: np.ndarray, strikes: np.ndarray, call_prices: np.ndarray
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     maturities = np.asarray(maturities, dtype=float)
     strikes = np.asarray(strikes, dtype=float)
     call_prices = np.asarray(call_prices, dtype=float)

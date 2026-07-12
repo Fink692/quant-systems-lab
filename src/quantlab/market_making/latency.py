@@ -27,9 +27,20 @@ def latency_slippage_report(
     quotes = np.asarray(quote_prices, dtype=float)
     side_array = np.asarray(sides)
     qty = np.full_like(quotes, float(quantities)) if np.isscalar(quantities) else np.asarray(quantities, dtype=float)
-    if quote_mid.shape != arrival_mid.shape or quote_mid.shape != quotes.shape or quote_mid.shape != side_array.shape or quote_mid.shape != qty.shape:
+    if (
+        quote_mid.shape != arrival_mid.shape
+        or quote_mid.shape != quotes.shape
+        or quote_mid.shape != side_array.shape
+        or quote_mid.shape != qty.shape
+    ):
         raise ValueError("all inputs must have matching one-dimensional shapes")
-    if quote_mid.ndim != 1 or np.any(quote_mid <= 0) or np.any(arrival_mid <= 0) or np.any(quotes <= 0) or np.any(qty < 0):
+    if (
+        quote_mid.ndim != 1
+        or np.any(quote_mid <= 0)
+        or np.any(arrival_mid <= 0)
+        or np.any(quotes <= 0)
+        or np.any(qty < 0)
+    ):
         raise ValueError("price inputs must be positive and quantities non-negative")
     if not set(np.unique(side_array)).issubset({"bid", "ask"}):
         raise ValueError("sides must contain only 'bid' or 'ask'")

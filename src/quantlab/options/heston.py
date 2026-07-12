@@ -56,8 +56,7 @@ def heston_characteristic_function(
 
     c = (rate - dividend) * iu * maturity
     c += (kappa * theta / sigma**2) * (
-        (kappa - rho * sigma * iu - d) * maturity
-        - 2.0 * np.log((1.0 - g * exp_neg_dt) / (1.0 - g))
+        (kappa - rho * sigma * iu - d) * maturity - 2.0 * np.log((1.0 - g * exp_neg_dt) / (1.0 - g))
     )
     d_term = ((kappa - rho * sigma * iu - d) / sigma**2) * ((1.0 - exp_neg_dt) / (1.0 - g * exp_neg_dt))
     return complex(np.exp(c + d_term * v0 + iu * x0))
@@ -105,7 +104,9 @@ def heston_price(
     if option_type not in {"call", "put"}:
         raise ValueError("option_type must be 'call' or 'put'")
 
-    cf = lambda u: heston_characteristic_function(u, params, spot, maturity, rate, dividend)
+    def cf(u):
+        return heston_characteristic_function(u, params, spot, maturity, rate, dividend)
+
     call = carr_madan_call_price(cf, strike, maturity, rate)
     if option_type == "call":
         return call

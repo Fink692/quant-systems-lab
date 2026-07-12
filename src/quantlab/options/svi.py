@@ -87,7 +87,13 @@ def calibrate_svi_slice(
         gtol=1e-11,
         max_nfev=2_000,
     )
-    params = SVIParams(a=float(result.x[0]), b=float(result.x[1]), rho=float(result.x[2]), m=float(result.x[3]), sigma=float(result.x[4]))
+    params = SVIParams(
+        a=float(result.x[0]),
+        b=float(result.x[1]),
+        rho=float(result.x[2]),
+        m=float(result.x[3]),
+        sigma=float(result.x[4]),
+    )
     return SVICalibrationResult(
         params=params,
         objective_value=float(np.sum(result.fun**2)),

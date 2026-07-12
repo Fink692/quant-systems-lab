@@ -8,7 +8,11 @@ from quantlab.risk.cross_sectional import (
     factor_mimicking_portfolios,
     neutralize_portfolio_exposures,
 )
-from quantlab.rl.policy_gradient import PolicyGradientRiskConstraints, train_constrained_policy_gradient, train_softmax_policy_gradient
+from quantlab.rl.policy_gradient import (
+    PolicyGradientRiskConstraints,
+    train_constrained_policy_gradient,
+    train_softmax_policy_gradient,
+)
 from quantlab.rl.trading_env import TradingEnv
 from quantlab.workflows.demo_suite import run_full_demo
 

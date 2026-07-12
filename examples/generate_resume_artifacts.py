@@ -162,8 +162,12 @@ def _bar_chart(title: str, values: pd.Series, subtitle: str, y_label: str) -> st
         y = _scale(float(value), y_min, y_max, top + plot_h, top)
         h = top + plot_h - y
         color = ["#1f77b4", "#2ca02c", "#ff7f0e", "#9467bd"][idx % 4]
-        parts.append(f'<rect class="bar" x="{x:.1f}" y="{y:.1f}" width="{bar_w:.1f}" height="{h:.1f}" fill="{color}" />')
-        parts.append(f'<text class="tick" x="{x + bar_w / 2:.1f}" y="{height - 68}" text-anchor="middle">{_esc(labels[idx])}</text>')
+        parts.append(
+            f'<rect class="bar" x="{x:.1f}" y="{y:.1f}" width="{bar_w:.1f}" height="{h:.1f}" fill="{color}" />'
+        )
+        parts.append(
+            f'<text class="tick" x="{x + bar_w / 2:.1f}" y="{height - 68}" text-anchor="middle">{_esc(labels[idx])}</text>'
+        )
     parts.append("</svg>")
     return "\n".join(parts) + "\n"
 

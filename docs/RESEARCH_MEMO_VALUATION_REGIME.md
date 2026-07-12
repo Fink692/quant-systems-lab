@@ -48,32 +48,32 @@ Generated report: `reports/valuation_regime_study.md`
 
 Key out-of-sample metrics:
 
-- Strategy CAGR: 7.50%
-- Benchmark CAGR: 10.09%
-- Strategy Sharpe: 0.96
+- Strategy CAGR: 7.19%
+- Benchmark CAGR: 9.92%
+- Strategy Sharpe: 0.95
 - Max drawdown: 34.43%
-- Beta to benchmark: 0.52
-- Annual alpha estimate: 2.09%
-- Hit rate: 73.15%
-- Profit factor: 2.30
-- Average monthly turnover: 6.94%
-- Total modeled cost: 1.57%
+- Beta to benchmark: 0.51
+- Annual alpha estimate: 2.04%
+- Average monthly turnover: 6.63%
+- Total modeled cost: 1.65%
 - 95% monthly VaR: 3.15%
 - 95% monthly CVaR: 5.60%
 
 Interpretation:
 
-The strategy does not beat buy-and-hold S&P 500 CAGR over this sample. It does, however, materially reduce beta and volatility while producing a positive alpha estimate and solid Sharpe after transaction costs. That makes it better framed as a risk-managed allocation overlay than a pure return-maximizing strategy.
+The strategy does not beat buy-and-hold S&P 500 CAGR. More importantly, it also fails to beat the Sharpe or drawdown of the 60/40 proxy and risk-matched equity comparators. Its annual alpha estimate is positive, but the 95% block-bootstrap interval of -0.32% to 4.22% crosses zero. The evidence therefore supports a lower-risk allocation overlay, not demonstrated timing alpha.
+
+The final partial test fold extends the untouched evaluation through September 2023. Across ten folds, the selected parameter pair lands below the median test rank twice, giving a fold-based probability-of-overfitting diagnostic of 20%. The deflated-Sharpe probability is 98.1% across nine parameter trials, but that selection-adjusted statistic does not overturn the simpler-baseline comparison.
 
 ## Robustness
 
 Cost robustness remains positive across the tested transaction-cost grid:
 
-- 0 bps cost: 7.54% CAGR
-- 5 bps cost: 7.50% CAGR
-- 10 bps cost: 7.46% CAGR
-- 25 bps cost: 7.33% CAGR
-- 50 bps cost: 7.11% CAGR
+- 0 bps cost: 7.23% CAGR
+- 5 bps cost: 7.19% CAGR
+- 10 bps cost: 7.15% CAGR
+- 25 bps cost: 7.02% CAGR
+- 50 bps cost: 6.81% CAGR
 
 The strategy is not turnover-heavy, so costs do not destroy the edge in this monthly setup. That said, the economic edge is not huge; weaker valuation regimes or poor ETF/futures implementation could erase it.
 
@@ -82,6 +82,8 @@ The strategy is not turnover-heavy, so costs do not destroy the edge in this mon
 Known weaknesses:
 
 - Buy-and-hold wins on CAGR in the tested sample.
+- A 60/40 proxy and beta-matched equity both produce higher Sharpe and shallower drawdown.
+- The block-bootstrap alpha interval crosses zero.
 - The strategy can be underexposed during expensive momentum markets.
 - The worst 12-month strategy return is still deeply negative, around -31.4%.
 - High-volatility months have slightly negative average strategy returns.
@@ -99,9 +101,9 @@ This is a useful risk-managed allocation study, not a claim of a standalone hedg
 - Add VIX and realized-volatility regime variables.
 - Test alternative valuation variables such as earnings yield, dividend yield, real rates, and credit spreads.
 - Add purged/embargoed validation windows for higher-frequency variants.
-- Compare against 60/40, volatility targeting, and trend-following benchmarks.
-- Add bootstrap confidence intervals for alpha and Sharpe.
-- Add parameter sensitivity over train/validation/test window lengths.
+- Add a managed-futures or trend-following sleeve using a separately sourced total-return series.
+- Extend the study across international equity markets with point-in-time valuation inputs.
+- Add full window-length sensitivity beyond the recorded threshold-stability table.
 - Add a live paper-trading mode that updates monthly after the latest data release.
 
 ## Conclusion

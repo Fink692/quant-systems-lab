@@ -1,7 +1,13 @@
 import numpy as np
 
 from quantlab.data.synthetic import synthetic_cointegrated_prices
-from quantlab.options.ssvi import SSVIParams, check_ssvi_no_arbitrage, ssvi_implied_volatility, ssvi_surface, ssvi_total_variance
+from quantlab.options.ssvi import (
+    SSVIParams,
+    check_ssvi_no_arbitrage,
+    ssvi_implied_volatility,
+    ssvi_surface,
+    ssvi_total_variance,
+)
 from quantlab.rough_vol.skew import fit_atm_skew_power_law
 from quantlab.stat_arb.network import pairwise_cointegration_network
 from quantlab.stat_arb.selection import candidate_spread_weights, rank_cointegrated_pairs

@@ -21,7 +21,9 @@ class DeepQLearningResult:
 
     def q_values(self, state: TradingState, previous_price: float | None = None) -> np.ndarray:
         features = _state_features(state, previous_price, self.feature_scale)
-        _hidden, q_values = _forward(features, self.input_weights, self.hidden_bias, self.output_weights, self.output_bias)
+        _hidden, q_values = _forward(
+            features, self.input_weights, self.hidden_bias, self.output_weights, self.output_bias
+        )
         return q_values
 
     def policy(self, state: TradingState, previous_price: float | None = None) -> float:

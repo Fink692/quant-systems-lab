@@ -17,7 +17,9 @@ def analyze_price_panel(path: str | Path, date_column: str = "date") -> dict[str
     prices = load_price_panel_csv(path, date_column=date_column)
     returns = returns_from_prices(prices)
     covariance = ledoit_wolf_covariance(returns)
-    covariance_values = covariance.to_numpy() if hasattr(covariance, "to_numpy") else np.asarray(covariance, dtype=float)
+    covariance_values = (
+        covariance.to_numpy() if hasattr(covariance, "to_numpy") else np.asarray(covariance, dtype=float)
+    )
 
     min_var = min_variance_weights(covariance_values)
     risk_parity = risk_parity_weights(covariance_values)
@@ -43,7 +45,11 @@ def _weights_payload(labels, weights: np.ndarray) -> dict[str, float]:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Analyze a real-data-compatible wide price-panel CSV.")
-    parser.add_argument("--prices", default="examples/price_panel_template.csv", help="CSV with a date column and one price column per asset.")
+    parser.add_argument(
+        "--prices",
+        default="examples/price_panel_template.csv",
+        help="CSV with a date column and one price column per asset.",
+    )
     parser.add_argument("--date-column", default="date")
     args = parser.parse_args()
     print(json.dumps(analyze_price_panel(args.prices, args.date_column), indent=2, sort_keys=True))

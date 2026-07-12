@@ -49,7 +49,13 @@ def efficient_frontier(
         if not result.success:
             continue
         variance = float(result.x @ cov @ result.x)
-        point_rows.append({"target_return": float(target), "expected_return": float(result.x @ mu), "volatility": float(np.sqrt(variance))})
+        point_rows.append(
+            {
+                "target_return": float(target),
+                "expected_return": float(result.x @ mu),
+                "volatility": float(np.sqrt(variance)),
+            }
+        )
         weight_rows.append(pd.Series(result.x, index=names, name=float(target)))
 
     return EfficientFrontierResult(points=pd.DataFrame(point_rows), weights=pd.DataFrame(weight_rows))

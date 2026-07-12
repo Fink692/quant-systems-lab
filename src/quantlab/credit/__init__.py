@@ -14,7 +14,13 @@ from quantlab.credit.default_models import credit_spread_from_hazard, merton_def
 from quantlab.credit.intensity import LogisticHazardFit, fit_logistic_hazard
 from quantlab.credit.intensity_process import CIRIntensityParams, CIRIntensitySimulationResult, simulate_cir_intensity
 from quantlab.credit.kmv import DistanceToDefaultResult, default_point, distance_to_default
-from quantlab.credit.migration import cumulative_default_probability, normalize_transition_matrix, simulate_rating_paths, transition_matrix_power
+from quantlab.credit.migration import (
+    cumulative_default_probability,
+    normalize_transition_matrix,
+    simulate_rating_paths,
+    transition_matrix_power,
+)
+from quantlab.credit.portfolio import CreditPortfolioLossResult, gaussian_copula_default_losses
 from quantlab.credit.pricing import cds_par_spread, risky_coupon_bond_price, risky_zero_coupon_price
 from quantlab.credit.sensitivity import (
     SpreadSensitivityResult,
@@ -22,7 +28,6 @@ from quantlab.credit.sensitivity import (
     shift_hazard_curve_by_spread,
     zero_coupon_spread_sensitivity,
 )
-from quantlab.credit.portfolio import CreditPortfolioLossResult, gaussian_copula_default_losses
 from quantlab.credit.structural import MertonCalibrationResult, calibrate_merton_asset_parameters, merton_equity_value
 from quantlab.credit.survival import ExponentialHazardFit, fit_exponential_hazard
 from quantlab.credit.tranches import TrancheLossResult, tranche_loss_distribution

@@ -47,7 +47,9 @@ def simulate_queue_position(
                 remaining = max(remaining - excess, 0.0)
                 if remaining == 0.0 and fill_time is None:
                     fill_time = time
-        rows.append({"time": float(time), "ahead": float(ahead), "remaining": float(remaining), "filled": remaining == 0.0})
+        rows.append(
+            {"time": float(time), "ahead": float(ahead), "remaining": float(remaining), "filled": remaining == 0.0}
+        )
         if fill_time is not None:
             break
     return QueueSimulationResult(pd.DataFrame(rows), filled=fill_time is not None, fill_time=fill_time)

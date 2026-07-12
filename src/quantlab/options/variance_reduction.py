@@ -35,7 +35,9 @@ def black_scholes_antithetic_price(
     half_paths = int(np.ceil(paths / 2))
     z = rng.normal(size=half_paths)
     z_full = np.concatenate([z, -z])[:paths]
-    terminal = spot * np.exp((rate - dividend - 0.5 * volatility**2) * maturity + volatility * np.sqrt(maturity) * z_full)
+    terminal = spot * np.exp(
+        (rate - dividend - 0.5 * volatility**2) * maturity + volatility * np.sqrt(maturity) * z_full
+    )
     payoff = np.maximum(terminal - strike, 0.0) if option_type == "call" else np.maximum(strike - terminal, 0.0)
     discounted = np.exp(-rate * maturity) * payoff
     return MonteCarloEstimate(float(np.mean(discounted)), float(np.std(discounted, ddof=1) / np.sqrt(paths)), paths)

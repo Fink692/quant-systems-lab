@@ -18,7 +18,7 @@ Rules:
 - Prefer adjusted close prices when using equities or ETFs.
 - Use at least several months of data for meaningful portfolio/risk estimates.
 
-The committed file [price_panel_template.csv](../examples/price_panel_template.csv) is a small schema fixture, not a live market-data source.
+The committed file [price_panel_template.csv](https://github.com/Fink692/quant-systems-lab/blob/main/examples/price_panel_template.csv) is a small schema fixture, not a live market-data source.
 
 ## Run The Example
 
