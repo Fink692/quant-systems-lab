@@ -98,6 +98,7 @@ files = [
     "src/quantlab/market_making/replay.py",
     "src/quantlab/market_making/strategies.py",
     "src/quantlab/research/experiment_config.py",
+    "src/quantlab/research/defensive_momentum.py",
     "src/quantlab/research/market_making_study.py",
     "src/quantlab/research/registry.py",
 ]

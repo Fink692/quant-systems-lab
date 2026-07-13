@@ -74,6 +74,17 @@ Limitations:
 - FRED DFF is used as a financing proxy and may not equal the fund's realized institutional financing rate.
 - Yahoo data terms and the provider's current redistribution rules must be reviewed before refreshing or redistributing the snapshot.
 
+### Defensive-Momentum Adjusted OHLC
+
+- Cached file: `data/real/defensive_momentum_ohlc.csv`
+- Integrity metadata: `data/real/defensive_momentum_ohlc.metadata.json`
+- Fetch script: `examples/fetch_defensive_momentum_data.py`
+- Instruments: QQQ, GLD, and TLT adjusted open and close.
+- Financing: official FRED DFF observations from the long-history snapshot.
+- Common window: November 18, 2004 through July 13, 2026.
+
+Adjusted open applies Yahoo's session adjustment factor, `adjusted close / raw close`, to raw open. The final completed closes are independently compared with Nasdaq.com and recording fails above 5 bps disagreement. Adjusted daily endpoints and modeled costs remain weaker than executable bid/ask quotes or broker fills.
+
 ### Forward Paper-Decision Snapshots
 
 - Snapshot directory: `data/paper/`

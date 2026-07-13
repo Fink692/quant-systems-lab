@@ -1,0 +1,18 @@
+{
+  "as_of_session": "2026-07-13",
+  "independent_closes": {
+    "gld": 367.2,
+    "qqq": 711.74,
+    "tlt": 83.97
+  },
+  "independent_source": "Nasdaq.com completed-session closes",
+  "retrieved_utc": "2026-07-13T21:40:28.700758+00:00",
+  "rows": 5444,
+  "sha256": "75b02a7a51ce735ad39282dd8bfa610ab22a0093df1153c0a2fa1b98809ddd21",
+  "source": "Yahoo Finance adjusted OHLC plus official FRED DFF snapshot",
+  "source_difference_bps": {
+    "gld": 1.9061851085921955,
+    "qqq": 0.00013720775848824474,
+    "tlt": 0.00014537371972878077
+  }
+}

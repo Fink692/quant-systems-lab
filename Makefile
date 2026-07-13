@@ -1,4 +1,4 @@
-.PHONY: install test quality docs audit fetch-real-data fetch-leveraged-data fetch-long-history-data fetch-execution-ohlc reproduce-strategy reproduce-leveraged-strategy reproduce-long-history-stress reproduce-execution-audit record-paper-decision score-paper-outcome fetch-order-book-data reproduce-market-making-sample market-making-dashboard market-making-notebook market-making-paper market-making-video demo-report resume-artifacts
+.PHONY: install test quality docs audit fetch-real-data fetch-leveraged-data fetch-long-history-data fetch-execution-ohlc fetch-defensive-momentum-data reproduce-strategy reproduce-leveraged-strategy reproduce-long-history-stress reproduce-execution-audit reproduce-defensive-momentum record-paper-decision score-paper-outcome fetch-order-book-data reproduce-market-making-sample market-making-dashboard market-making-notebook market-making-paper market-making-video demo-report resume-artifacts
 
 install:
 	python -m pip install -e ".[dev]"
@@ -64,6 +64,12 @@ reproduce-execution-audit:
 
 score-paper-outcome:
 	python examples/score_leveraged_trend_paper.py --decisions paper/leveraged_trend_decisions.jsonl --outcomes paper/leveraged_trend_outcomes.jsonl --total-cost-bps 10
+
+fetch-defensive-momentum-data:
+	python examples/fetch_defensive_momentum_data.py --rates data/real/qqq_fred_stress_daily.csv --output data/real/defensive_momentum_ohlc.csv --metadata data/real/defensive_momentum_ohlc.metadata.json
+
+reproduce-defensive-momentum:
+	python examples/run_defensive_momentum_study.py --data data/real/defensive_momentum_ohlc.csv --config config/defensive_momentum.json --output reports/defensive_momentum_study.md
 
 demo-report:
 	quantlab demo-report --seed 7 --output examples/demo_report_seed7.md

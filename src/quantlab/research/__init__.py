@@ -1,5 +1,11 @@
 """Research workflows for real-data strategy studies."""
 
+from quantlab.research.defensive_momentum import (
+    DefensiveMomentumConfig,
+    DefensiveMomentumResult,
+    load_defensive_momentum_csv,
+    run_defensive_momentum_study,
+)
 from quantlab.research.execution_timing import (
     ExecutionTimingConfig,
     ExecutionTimingResult,
@@ -61,6 +67,8 @@ __all__ = [
     "ExecutionSettings",
     "ExecutionTimingConfig",
     "ExecutionTimingResult",
+    "DefensiveMomentumConfig",
+    "DefensiveMomentumResult",
     "FrozenPaperConfig",
     "MarketMakingExperimentConfig",
     "MarketMakingStudyResult",
@@ -75,6 +83,7 @@ __all__ = [
     "ValuationRegimeConfig",
     "ValuationRegimeResult",
     "load_leveraged_etf_csv",
+    "load_defensive_momentum_csv",
     "load_adjusted_ohlc_csv",
     "load_qqq_fred_csv",
     "load_shiller_sp500_csv",
@@ -90,6 +99,7 @@ __all__ = [
     "run_market_making_study",
     "run_leveraged_trend_study",
     "run_leveraged_trend_stress",
+    "run_defensive_momentum_study",
     "run_execution_timing_audit",
     "run_valuation_regime_walk_forward",
     "verify_paper_ledger",

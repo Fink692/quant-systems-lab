@@ -1,0 +1,13 @@
+{
+  "development_start": "2005-01-01",
+  "evaluation_start": "2017-01-01",
+  "momentum_days": [63, 126, 252],
+  "trend_days": [100, 200],
+  "target_volatilities": [0.25, 0.3, 0.4, 0.5],
+  "max_leverages": [1.5, 2.0, 3.0],
+  "volatility_days": 63,
+  "rebalance_frequencies": ["weekly", "monthly"],
+  "transaction_cost_bps": 10.0,
+  "annual_excess_leverage_drag": 0.01,
+  "target_cagr": 0.2
+}
