@@ -102,4 +102,5 @@ files = [
     "src/quantlab/research/defensive_momentum.py",
     "src/quantlab/research/market_making_study.py",
     "src/quantlab/research/registry.py",
+    "src/quantlab/research/strategy_ensemble.py",
 ]

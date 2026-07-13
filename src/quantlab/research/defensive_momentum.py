@@ -341,6 +341,15 @@ def load_defensive_momentum_csv(path: str | Path) -> pd.DataFrame:
     return frame
 
 
+def run_frozen_defensive_monthly_candidate(
+    inputs: pd.DataFrame,
+    config: DefensiveMomentumConfig | None = None,
+) -> pd.DataFrame:
+    cfg = DefensiveMomentumConfig() if config is None else config
+    cfg.validate()
+    return _run_candidate(inputs, cfg, 252, 200, 0.25, 1.5, "monthly")
+
+
 def run_defensive_momentum_study(
     inputs: pd.DataFrame,
     config: DefensiveMomentumConfig | None = None,

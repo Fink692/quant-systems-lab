@@ -5,6 +5,7 @@ from quantlab.research.bitcoin_trend import (
     BitcoinTrendResult,
     load_bitcoin_coinbase_csv,
     run_bitcoin_trend_study,
+    run_frozen_bitcoin_candidate,
 )
 from quantlab.research.defensive_momentum import (
     DefensiveMomentumConfig,
@@ -16,6 +17,7 @@ from quantlab.research.defensive_momentum import (
     compute_defensive_momentum_outcome,
     load_defensive_momentum_csv,
     run_defensive_momentum_study,
+    run_frozen_defensive_monthly_candidate,
     run_frozen_monthly_robustness,
     verify_defensive_outcome_ledger,
 )
@@ -64,6 +66,11 @@ from quantlab.research.paper_trading import (
     verify_paper_ledger,
 )
 from quantlab.research.registry import register_experiment
+from quantlab.research.strategy_ensemble import (
+    FixedEnsembleConfig,
+    FixedEnsembleResult,
+    run_fixed_strategy_ensemble,
+)
 from quantlab.research.valuation_regime import (
     RobustnessResult,
     TearSheet,
@@ -88,6 +95,8 @@ __all__ = [
     "FrozenMonthlyRobustnessResult",
     "append_defensive_outcome",
     "FrozenPaperConfig",
+    "FixedEnsembleConfig",
+    "FixedEnsembleResult",
     "MarketMakingExperimentConfig",
     "MarketMakingStudyResult",
     "ResearchPeriod",
@@ -123,6 +132,9 @@ __all__ = [
     "run_leveraged_trend_stress",
     "run_defensive_momentum_study",
     "run_frozen_monthly_robustness",
+    "run_frozen_bitcoin_candidate",
+    "run_frozen_defensive_monthly_candidate",
+    "run_fixed_strategy_ensemble",
     "verify_defensive_outcome_ledger",
     "run_execution_timing_audit",
     "run_valuation_regime_walk_forward",

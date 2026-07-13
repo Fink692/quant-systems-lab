@@ -69,6 +69,15 @@ def load_bitcoin_coinbase_csv(path: str | Path) -> pd.DataFrame:
     return data
 
 
+def run_frozen_bitcoin_candidate(
+    inputs: pd.DataFrame,
+    config: BitcoinTrendConfig | None = None,
+) -> pd.DataFrame:
+    cfg = BitcoinTrendConfig() if config is None else config
+    cfg.validate()
+    return _run_candidate(inputs, cfg, 100, 63, 0.3, 0.02)
+
+
 def run_bitcoin_trend_study(
     inputs: pd.DataFrame,
     config: BitcoinTrendConfig | None = None,

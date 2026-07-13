@@ -157,6 +157,8 @@ The frozen lead's robustness audit keeps the attractive point estimate in perspe
 
 A separate Coinbase BTC-USD trend study uses completed primary-venue candles, official FRED financing, independent Yahoo reconciliation, and validation-only selection. Its selected unlevered candidate earns **20.64% evaluation CAGR** from 2021 through July 12, 2026 with a 26.03% maximum drawdown. The threshold is marginal: 50 bps turnover cost lowers evaluation CAGR to 19.18%, and only 44.65% of moving-block bootstrap samples clear 20%. It is reported as a historical threshold hit, not verified future profitability.
 
+A frozen 50/50 monthly blend of that Bitcoin candidate and `defensive-momentum-monthly-v1` produces **29.39% historical evaluation CAGR**, a 1.55 Sharpe ratio, and 19.41% maximum drawdown. Component-return correlation is 0.118, 82.66% of 5,000 moving-block bootstrap paths clear 20%, and 200 bps ensemble turnover cost leaves 28.45% evaluation CAGR. This combination was tested after component evaluation histories were visible, so it is an exploratory candidate frozen for prospective validation, not an untouched holdout or guaranteed return.
+
 Daily outcome scoring is implemented but deliberately has no genesis result yet. It requires Nasdaq completion, Yahoo/Nasdaq close reconciliation, strictly prior FRED financing, active-decision linkage, and semantic return verification before appending a hash-chained outcome.
 
 ## Forward Paper Ledger
@@ -187,13 +189,15 @@ Artifacts:
 - [Defensive-momentum decision ledger](paper/defensive_momentum_decisions.jsonl)
 - [Bitcoin trend research memo](docs/RESEARCH_MEMO_BITCOIN_TREND.md)
 - [Generated Bitcoin trend report](reports/bitcoin_trend_study.md)
+- [Fixed strategy ensemble memo](docs/RESEARCH_MEMO_STRATEGY_ENSEMBLE.md)
+- [Generated strategy ensemble report](reports/strategy_ensemble.md)
 
 ## Verification
 
 Current local verification:
 
 ```text
-221 passed; 88.64% coverage
+225 passed; 88.69% coverage
 ```
 
 GitHub Actions runs formatting, linting, scoped static typing, strict documentation builds, dependency auditing, coverage, and the complete test suite across Python 3.11, 3.12, and 3.13.
@@ -227,7 +231,7 @@ These charts are generated from the package with `python examples/generate_resum
 
 ## Resume Summary
 
-Built a 221-test Python quant-finance research platform centered on a real-data queue-aware market-making study with event-level ingestion, reconstruction, chronological evaluation, latency/queue/fee sensitivity, immutable experiment provenance, independent PnL reconciliation, and five-policy comparison; supported by four real-data allocation studies, two prospective hash-chained paper strategies, and derivatives, portfolio, risk, credit, statistical-arbitrage, RL, and systemic-risk modules.
+Built a 225-test Python quant-finance research platform centered on a real-data queue-aware market-making study with event-level ingestion, reconstruction, chronological evaluation, latency/queue/fee sensitivity, immutable experiment provenance, independent PnL reconciliation, and five-policy comparison; supported by five real-data allocation studies, two prospective hash-chained paper strategies, and derivatives, portfolio, risk, credit, statistical-arbitrage, RL, and systemic-risk modules.
 
 ## Limitations and Next Extensions
 

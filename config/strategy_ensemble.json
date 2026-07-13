@@ -1,0 +1,11 @@
+{
+  "strategy_id": "btc-defensive-equal-weight-monthly-v1",
+  "bitcoin_weight": 0.5,
+  "defensive_weight": 0.5,
+  "rebalance_frequency": "monthly",
+  "rebalance_cost_bps": 10.0,
+  "full_start": "2016-01-01",
+  "evaluation_start": "2021-01-01",
+  "target_cagr": 0.2,
+  "annualization_days": 365
+}
