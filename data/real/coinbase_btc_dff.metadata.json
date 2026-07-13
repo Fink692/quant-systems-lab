@@ -1,0 +1,15 @@
+{
+  "annualized_tracking_error": 0.09533403223160294,
+  "as_of_session": "2026-07-12",
+  "coinbase_minus_yahoo_annual_mean": 0.004980689837646219,
+  "daily_return_correlation": 0.9898396344178865,
+  "independent_source": "Yahoo Finance BTC-USD daily closes",
+  "overlap_observations": 4010,
+  "rate_source": "Federal Reserve Bank of St. Louis DFF",
+  "rate_source_url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=DFF",
+  "retrieved_utc": "2026-07-13T22:37:02.166951+00:00",
+  "rows": 4011,
+  "sha256": "5b8cc36ecc5ab4364d67586fd3b208403e1b6f2640d38ad824ac55446d83839d",
+  "source": "Coinbase Exchange BTC-USD daily candles",
+  "source_url": "https://api.exchange.coinbase.com/products/BTC-USD/candles"
+}

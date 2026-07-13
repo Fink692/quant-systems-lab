@@ -2,6 +2,26 @@
 
 ## Real Market Dataset
 
+### Coinbase BTC-USD Daily Candles
+
+- Cached file: `data/real/coinbase_btc_dff.csv`
+- Integrity metadata: `data/real/coinbase_btc_dff.metadata.json`
+- Fetch script: `examples/fetch_bitcoin_trend_data.py`
+- Primary price source: Coinbase Exchange `BTC-USD` daily candle API.
+- Financing source: official [FRED DFF](https://fred.stlouisfed.org/series/DFF).
+- Independent reconciliation: Yahoo Finance `BTC-USD` daily closes.
+- Local window: July 20, 2015 through July 12, 2026.
+
+The fetcher requests Coinbase candles in bounded chunks, sorts and deduplicates them, and excludes the current UTC date so an incomplete candle cannot enter the study. The 4,011-row canonical snapshot has SHA-256 `5b8cc36ecc5ab4364d67586fd3b208403e1b6f2640d38ad824ac55446d83839d`. Across 4,010 overlapping observations, Coinbase and Yahoo daily returns correlate at 0.98984.
+
+Limitations:
+
+- Daily OHLCV bars are not executable bid/ask quotes and do not encode market impact.
+- Coinbase's midnight UTC candle boundary is an accounting boundary in a continuously traded market.
+- The independent Yahoo comparison is a consistency check, not proof that either free public feed is error-free.
+- DFF is a cash-rate proxy, not an account-specific crypto venue yield.
+- Refetching after another UTC close changes the experiment; exact reproduction uses the committed snapshot.
+
 ### LOBSTER AAPL Level-5 Demonstration Sample
 
 - Instrument and venue: AAPL, NASDAQ.

@@ -1,5 +1,11 @@
 """Research workflows for real-data strategy studies."""
 
+from quantlab.research.bitcoin_trend import (
+    BitcoinTrendConfig,
+    BitcoinTrendResult,
+    load_bitcoin_coinbase_csv,
+    run_bitcoin_trend_study,
+)
 from quantlab.research.defensive_momentum import (
     DefensiveMomentumConfig,
     DefensiveMomentumResult,
@@ -68,6 +74,8 @@ from quantlab.research.valuation_regime import (
 )
 
 __all__ = [
+    "BitcoinTrendConfig",
+    "BitcoinTrendResult",
     "CostModel",
     "DatasetReference",
     "EvaluationSettings",
@@ -93,6 +101,7 @@ __all__ = [
     "ValuationRegimeConfig",
     "ValuationRegimeResult",
     "load_leveraged_etf_csv",
+    "load_bitcoin_coinbase_csv",
     "load_defensive_momentum_csv",
     "load_adjusted_ohlc_csv",
     "load_qqq_fred_csv",
@@ -109,6 +118,7 @@ __all__ = [
     "compute_paper_outcome",
     "register_experiment",
     "run_market_making_study",
+    "run_bitcoin_trend_study",
     "run_leveraged_trend_study",
     "run_leveraged_trend_stress",
     "run_defensive_momentum_study",
