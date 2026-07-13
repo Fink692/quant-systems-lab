@@ -122,6 +122,156 @@ def compute_defensive_momentum_decision(
     return record
 
 
+def compute_defensive_momentum_outcome(
+    decision: dict[str, Any],
+    completed_bar: dict[str, Any],
+    scored_utc: str,
+    config: FrozenDefensiveMomentumConfig,
+    previous_outcome: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    config.validate()
+    if decision.get("config_sha256") != _canonical_json_sha256(asdict(config)):
+        raise ValueError("decision does not match the frozen defensive-momentum config")
+    session = pd.Timestamp(str(completed_bar["session"])).normalize()
+    if session < pd.Timestamp(decision["effective_session"]):
+        raise ValueError("outcome session precedes the decision effective session")
+    prices = {
+        f"{asset}_{field}": float(completed_bar[f"{asset}_{field}"]) for asset in ASSETS for field in ("open", "close")
+    }
+    if min(prices.values()) <= 0:
+        raise ValueError("completed adjusted OHLC prices must be positive")
+    dff_percent = float(completed_bar["dff_percent"])
+    if dff_percent < 0:
+        raise ValueError("DFF must be non-negative")
+    new_weights = {asset: float(decision["target_weights"][asset]) for asset in (*ASSETS, "cash")}
+    if not np.isclose(sum(new_weights.values()), 1.0, atol=1e-12):
+        raise ValueError("decision target weights must sum to one")
+    if previous_outcome is None:
+        old_weights = {asset: 0.0 for asset in ASSETS}
+        old_weights["cash"] = 1.0
+        overnight_return = 0.0
+        previous_hash = "GENESIS"
+    else:
+        old_weights = {asset: float(previous_outcome["target_weights"][asset]) for asset in (*ASSETS, "cash")}
+        cash_return = dff_percent / 100.0 / 360.0
+        overnight_return = sum(
+            old_weights[asset] * (prices[f"{asset}_open"] / float(previous_outcome[f"{asset}_close"]) - 1.0)
+            for asset in ASSETS
+        ) + old_weights["cash"] * cash_return * (2 / 3)
+        previous_hash = str(previous_outcome["outcome_hash"])
+    cash_return = dff_percent / 100.0 / 360.0
+    intraday_return = sum(
+        new_weights[asset] * (prices[f"{asset}_close"] / prices[f"{asset}_open"] - 1.0) for asset in ASSETS
+    ) + new_weights["cash"] * cash_return * (1 / 3)
+    turnover = sum(abs(new_weights[asset] - old_weights[asset]) for asset in ASSETS)
+    trading_cost = turnover * config.transaction_cost_bps / 10_000.0
+    old_leverage = sum(old_weights[asset] for asset in ASSETS)
+    new_leverage = sum(new_weights[asset] for asset in ASSETS)
+    excess_leverage = max(old_leverage - 1.0, 0.0) * (2 / 3) + max(new_leverage - 1.0, 0.0) * (1 / 3)
+    leverage_drag = excess_leverage * config.annual_excess_leverage_drag / 252.0
+    gross_return = (1.0 + overnight_return) * (1.0 + intraday_return) - 1.0
+    outcome: dict[str, Any] = {
+        "schema_version": 1,
+        "strategy_id": decision["strategy_id"],
+        "decision_hash": decision["record_hash"],
+        "scored_utc": scored_utc,
+        "session": session.strftime("%Y-%m-%d"),
+        "target_weights": new_weights,
+        **prices,
+        "dff_percent": dff_percent,
+        "dff_observation_date": str(completed_bar["dff_observation_date"]),
+        "independent_closes": {asset: float(dict(completed_bar["independent_closes"])[asset]) for asset in ASSETS},
+        "source_difference_bps": {
+            asset: float(dict(completed_bar["source_difference_bps"])[asset]) for asset in ASSETS
+        },
+        "overnight_return": float(overnight_return),
+        "intraday_return": float(intraday_return),
+        "gross_return": float(gross_return),
+        "turnover": float(turnover),
+        "transaction_cost_bps": float(config.transaction_cost_bps),
+        "trading_cost": float(trading_cost),
+        "annual_excess_leverage_drag": float(config.annual_excess_leverage_drag),
+        "leverage_drag": float(leverage_drag),
+        "net_return": float(gross_return - trading_cost - leverage_drag),
+        "source": str(completed_bar.get("source", "Yahoo adjusted OHLC; Nasdaq/FRED cross-check")),
+        "previous_outcome_hash": previous_hash,
+    }
+    outcome["outcome_hash"] = _canonical_json_sha256(outcome)
+    return outcome
+
+
+def verify_defensive_outcome_ledger(
+    path: str | Path,
+    decisions: list[dict[str, Any]],
+    config: FrozenDefensiveMomentumConfig,
+) -> list[dict[str, Any]]:
+    ledger_path = Path(path)
+    if not ledger_path.exists():
+        return []
+    outcomes = [json.loads(line) for line in ledger_path.read_text(encoding="utf-8").splitlines() if line.strip()]
+    decision_by_hash = {decision["record_hash"]: decision for decision in decisions}
+    previous: dict[str, Any] | None = None
+    previous_hash = "GENESIS"
+    previous_session: pd.Timestamp | None = None
+    for outcome in outcomes:
+        claimed = outcome.get("outcome_hash")
+        payload = {key: value for key, value in outcome.items() if key != "outcome_hash"}
+        if claimed != _canonical_json_sha256(payload):
+            raise ValueError("defensive outcome hash mismatch")
+        if outcome.get("previous_outcome_hash") != previous_hash:
+            raise ValueError("defensive outcome chain is broken")
+        session = pd.Timestamp(outcome["session"])
+        if previous_session is not None and session <= previous_session:
+            raise ValueError("defensive outcome sessions must increase strictly")
+        eligible_decisions = [
+            decision for decision in decisions if pd.Timestamp(decision["effective_session"]) <= session
+        ]
+        if not eligible_decisions:
+            raise ValueError("defensive outcome has no effective decision")
+        active = max(eligible_decisions, key=lambda decision: pd.Timestamp(decision["effective_session"]))
+        decision = decision_by_hash.get(outcome.get("decision_hash"))
+        if decision is None or decision["record_hash"] != active["record_hash"]:
+            raise ValueError("defensive outcome is not linked to the active decision")
+        _validate_defensive_outcome(outcome, decision, config, previous)
+        previous = outcome
+        previous_hash = str(claimed)
+        previous_session = session
+    return outcomes
+
+
+def append_defensive_outcome(
+    path: str | Path,
+    outcome: dict[str, Any],
+    decisions: list[dict[str, Any]],
+    config: FrozenDefensiveMomentumConfig,
+) -> None:
+    ledger_path = Path(path)
+    outcomes = verify_defensive_outcome_ledger(ledger_path, decisions, config)
+    if outcomes and pd.Timestamp(outcome["session"]) <= pd.Timestamp(outcomes[-1]["session"]):
+        raise ValueError("cannot append a duplicate or older defensive outcome")
+    expected_previous = outcomes[-1]["outcome_hash"] if outcomes else "GENESIS"
+    if outcome.get("previous_outcome_hash") != expected_previous:
+        raise ValueError("new defensive outcome does not extend the ledger head")
+    payload = {key: value for key, value in outcome.items() if key != "outcome_hash"}
+    if outcome.get("outcome_hash") != _canonical_json_sha256(payload):
+        raise ValueError("new defensive outcome hash is invalid")
+    decision_by_hash = {decision["record_hash"]: decision for decision in decisions}
+    decision = decision_by_hash.get(outcome.get("decision_hash"))
+    if decision is None:
+        raise ValueError("new defensive outcome has no matching decision")
+    session = pd.Timestamp(outcome["session"])
+    eligible_decisions = [item for item in decisions if pd.Timestamp(item["effective_session"]) <= session]
+    if not eligible_decisions:
+        raise ValueError("new defensive outcome has no effective decision")
+    active = max(eligible_decisions, key=lambda item: pd.Timestamp(item["effective_session"]))
+    if active["record_hash"] != decision["record_hash"]:
+        raise ValueError("new defensive outcome is not linked to the active decision")
+    _validate_defensive_outcome(outcome, decision, config, outcomes[-1] if outcomes else None)
+    ledger_path.parent.mkdir(parents=True, exist_ok=True)
+    with ledger_path.open("a", encoding="utf-8", newline="\n") as handle:
+        handle.write(json.dumps(outcome, sort_keys=True, separators=(",", ":")) + "\n")
+
+
 @dataclass(frozen=True)
 class DefensiveMomentumConfig:
     development_start: str = "2005-01-01"
@@ -323,6 +473,30 @@ def _metrics(history: pd.DataFrame) -> dict[str, float]:
         "max_drawdown": float(np.max(1.0 - equity.to_numpy() / peaks)),
         "observations": float(len(returns)),
     }
+
+
+def _validate_defensive_outcome(
+    outcome: dict[str, Any],
+    decision: dict[str, Any],
+    config: FrozenDefensiveMomentumConfig,
+    previous_outcome: dict[str, Any] | None,
+) -> None:
+    expected = compute_defensive_momentum_outcome(
+        decision,
+        outcome,
+        str(outcome["scored_utc"]),
+        config,
+        previous_outcome,
+    )
+    if set(outcome) != set(expected):
+        raise ValueError("defensive outcome fields do not match the schema")
+    for field, expected_value in expected.items():
+        actual = outcome[field]
+        if isinstance(expected_value, float):
+            if not np.isclose(float(actual), expected_value, atol=1e-12):
+                raise ValueError(f"defensive outcome {field} calculation is invalid")
+        elif actual != expected_value:
+            raise ValueError(f"defensive outcome {field} value is invalid")
 
 
 def _canonical_json_sha256(payload: dict[str, Any]) -> str:

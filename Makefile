@@ -1,4 +1,4 @@
-.PHONY: install test quality docs audit fetch-real-data fetch-leveraged-data fetch-long-history-data fetch-execution-ohlc fetch-defensive-momentum-data reproduce-strategy reproduce-leveraged-strategy reproduce-long-history-stress reproduce-execution-audit reproduce-defensive-momentum record-paper-decision record-defensive-paper-decision score-paper-outcome fetch-order-book-data reproduce-market-making-sample market-making-dashboard market-making-notebook market-making-paper market-making-video demo-report resume-artifacts
+.PHONY: install test quality docs audit fetch-real-data fetch-leveraged-data fetch-long-history-data fetch-execution-ohlc fetch-defensive-momentum-data reproduce-strategy reproduce-leveraged-strategy reproduce-long-history-stress reproduce-execution-audit reproduce-defensive-momentum record-paper-decision record-defensive-paper-decision score-paper-outcome score-defensive-paper-outcome fetch-order-book-data reproduce-market-making-sample market-making-dashboard market-making-notebook market-making-paper market-making-video demo-report resume-artifacts
 
 install:
 	python -m pip install -e ".[dev]"
@@ -73,6 +73,9 @@ reproduce-defensive-momentum:
 
 record-defensive-paper-decision:
 	python examples/record_defensive_momentum_paper.py --source data/real/defensive_momentum_ohlc.csv --source-metadata data/real/defensive_momentum_ohlc.metadata.json --snapshot "$(SNAPSHOT)" --metadata "$(METADATA)" --ledger paper/defensive_momentum_decisions.jsonl --effective-session "$(EFFECTIVE_SESSION)" --config config/defensive_momentum_paper.json
+
+score-defensive-paper-outcome:
+	python examples/score_defensive_momentum_paper.py --session "$(SESSION)" --decisions paper/defensive_momentum_decisions.jsonl --outcomes paper/defensive_momentum_outcomes.jsonl --config config/defensive_momentum_paper.json
 
 demo-report:
 	quantlab demo-report --seed 7 --output examples/demo_report_seed7.md

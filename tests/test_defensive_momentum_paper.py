@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import copy
+import hashlib
 import json
 from pathlib import Path
 
@@ -9,8 +10,11 @@ import pytest
 
 from quantlab.research.defensive_momentum import (
     FrozenDefensiveMomentumConfig,
+    append_defensive_outcome,
     compute_defensive_momentum_decision,
+    compute_defensive_momentum_outcome,
     load_defensive_momentum_csv,
+    verify_defensive_outcome_ledger,
 )
 from quantlab.research.paper_trading import canonical_file_sha256, verify_paper_ledger
 
@@ -79,3 +83,48 @@ def test_monthly_decision_rejects_source_disagreement_and_ledger_tampering(tmp_p
     path.write_text(json.dumps(tampered) + "\n", encoding="utf-8")
     with pytest.raises(ValueError, match="hash mismatch"):
         verify_paper_ledger(path)
+
+
+def test_defensive_outcome_charges_next_open_turnover_and_rejects_rehashed_false_return(tmp_path):
+    decision = verify_paper_ledger(LEDGER)[0]
+    config = FrozenDefensiveMomentumConfig()
+    bar = {
+        "session": "2026-07-14",
+        "qqq_open": 710.0,
+        "qqq_close": 715.0,
+        "gld_open": 367.0,
+        "gld_close": 368.0,
+        "tlt_open": 84.0,
+        "tlt_close": 83.5,
+        "dff_percent": 3.5,
+        "dff_observation_date": "2026-07-13",
+        "independent_closes": {"qqq": 715.0, "gld": 368.0, "tlt": 83.5},
+        "source_difference_bps": {"qqq": 0.0, "gld": 0.0, "tlt": 0.0},
+        "source": "synthetic completed-bar test fixture",
+    }
+    outcome = compute_defensive_momentum_outcome(decision, bar, "2026-07-14T21:00:00+00:00", config)
+    leverage = decision["selected_leverage"]
+    cash_weight = 1.0 - leverage
+    expected_intraday = leverage * (715.0 / 710.0 - 1.0) + cash_weight * (3.5 / 100.0 / 360.0) / 3
+    expected_cost = leverage * 0.001
+    expected_drag = max(leverage - 1.0, 0.0) / 3 * 0.01 / 252.0
+    assert outcome["overnight_return"] == 0.0
+    assert outcome["turnover"] == pytest.approx(leverage)
+    assert outcome["net_return"] == pytest.approx(expected_intraday - expected_cost - expected_drag)
+
+    path = tmp_path / "outcomes.jsonl"
+    decisions = [decision]
+    append_defensive_outcome(path, outcome, decisions, config)
+    assert verify_defensive_outcome_ledger(path, decisions, config) == [outcome]
+    with pytest.raises(ValueError, match="duplicate or older"):
+        append_defensive_outcome(path, outcome, decisions, config)
+
+    tampered = copy.deepcopy(outcome)
+    tampered["net_return"] = 1.0
+    payload = {key: value for key, value in tampered.items() if key != "outcome_hash"}
+    tampered["outcome_hash"] = hashlib.sha256(
+        json.dumps(payload, sort_keys=True, separators=(",", ":"), allow_nan=False).encode("utf-8")
+    ).hexdigest()
+    path.write_text(json.dumps(tampered) + "\n", encoding="utf-8")
+    with pytest.raises(ValueError, match="net_return calculation is invalid"):
+        verify_defensive_outcome_ledger(path, decisions, config)

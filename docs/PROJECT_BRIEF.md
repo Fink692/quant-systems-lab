@@ -46,12 +46,12 @@ A tested Python quant-finance platform implementing ten advanced institutional m
 - Real-data-compatible workflow: `examples/run_price_panel_example.py`
 - Research memos: `docs/RESEARCH_MEMO_VALUATION_REGIME.md` and `docs/RESEARCH_MEMO_LEVERAGED_TREND.md`
 - Hiring readiness audit: `docs/HIRING_READINESS_AUDIT.md`
-- Current local verification: `214 passed`, 88.63% coverage
+- Current local verification: `215 passed`, 88.52% coverage
 - Continuous integration: `.github/workflows/ci.yml`
 
 ## Resume Bullet
 
-Built Quant Systems Lab, a 214-test Python platform centered on a real-data queue-aware market-making study with event ingestion, reconstruction, chronological evaluation, latency/queue/fee sensitivity, immutable provenance, and independent PnL reconciliation, supported by three reproducible real-data allocation studies, two prospective hash-chained paper strategies, and derivatives, portfolio, risk, credit, statistical-arbitrage, RL, and systemic-risk modules.
+Built Quant Systems Lab, a 215-test Python platform centered on a real-data queue-aware market-making study with event ingestion, reconstruction, chronological evaluation, latency/queue/fee sensitivity, immutable provenance, and independent PnL reconciliation, supported by three reproducible real-data allocation studies, two prospective hash-chained paper strategies, and derivatives, portfolio, risk, credit, statistical-arbitrage, RL, and systemic-risk modules.
 
 ## Interview Talking Points
 

@@ -53,4 +53,16 @@ python examples/record_defensive_momentum_paper.py `
 
 ## Evidence Gate
 
-The next required artifact is completed-session outcome scoring using adjusted OHLC and the same next-open convention. A handful of sessions cannot establish a 20% process. Reporting must retain drawdown, leverage, financing, turnover, source failures, and all missing observations alongside return.
+Score a session only after Nasdaq reports it as completed:
+
+```powershell
+python examples/score_defensive_momentum_paper.py `
+  --session YYYY-MM-DD `
+  --decisions paper/defensive_momentum_decisions.jsonl `
+  --outcomes paper/defensive_momentum_outcomes.jsonl `
+  --config config/defensive_momentum_paper.json
+```
+
+The scorer uses Yahoo adjusted OHLC for returns, reconciles raw closes to Nasdaq within 5 bps, and retrieves the latest strictly prior official FRED DFF observation. The old target earns the overnight move, the active target earns the intraday move, and turnover plus leverage drag are charged explicitly. Every outcome is linked to the active decision and prior outcome; validation recomputes the complete return calculation and rejects a rehashed false result.
+
+As of July 13, Nasdaq does not report July 14 as completed. The scorer refuses the request and no outcome ledger exists. A handful of future sessions cannot establish a 20% process. Reporting must retain drawdown, leverage, financing, turnover, source failures, and all missing observations alongside return.
