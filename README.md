@@ -12,7 +12,7 @@ The flagship pipeline ingests real NASDAQ-derived order-book messages, validates
 - Uses immutable experiment configurations, dataset hashes, append-only run records, chronological splits, and accounting invariants.
 - Preserves negative results: all five policies lose money on the public sample, and the repository explicitly avoids presenting one session as persistent alpha.
 - Includes deterministic synthetic workflows for model correctness plus real order-book, S&P 500, and leveraged-ETF research paths.
-- Ships with 215 tests, 88.52% measured coverage with an 85% CI floor, Python 3.11-3.13 CI, Ruff, Black, MyPy, dependency auditing, pre-commit, documentation builds, and benchmark regression checks.
+- Ships with 217 tests, 88.58% measured coverage with an 85% CI floor, Python 3.11-3.13 CI, Ruff, Black, MyPy, dependency auditing, pre-commit, documentation builds, and benchmark regression checks.
 
 ## Flagship Result: Real-Data Market Making
 
@@ -153,6 +153,8 @@ A defensive QQQ/GLD/TLT momentum grid was also tested with adjusted next-open ex
 
 That monthly lead is now frozen prospectively as `defensive-momentum-monthly-v1`. Its genesis target was recorded after the July 13 close for July 14: **105.2183% QQQ and -5.2183% financing**. The decision is hash-chained to the exact input snapshot and configuration; it is process evidence, not a return claim.
 
+The frozen lead's robustness audit keeps the attractive point estimate in perspective: only **40.39%** of rolling five-year windows and **55.70%** of 2,000 moving-block bootstrap samples clear 20% CAGR. At 25 bps per unit of turnover, full-sample CAGR falls to 19.50%.
+
 Daily outcome scoring is implemented but deliberately has no genesis result yet. It requires Nasdaq completion, Yahoo/Nasdaq close reconciliation, strictly prior FRED financing, active-decision linkage, and semantic return verification before appending a hash-chained outcome.
 
 ## Forward Paper Ledger
@@ -178,6 +180,7 @@ Artifacts:
 - [Generated long-history stress report](reports/leveraged_trend_long_history.md)
 - [Defensive-momentum research memo](docs/RESEARCH_MEMO_DEFENSIVE_MOMENTUM.md)
 - [Generated defensive-momentum report](reports/defensive_momentum_study.md)
+- [Frozen monthly robustness report](reports/defensive_momentum_robustness.md)
 - [Defensive-momentum paper protocol](docs/DEFENSIVE_MOMENTUM_PAPER_PROTOCOL.md)
 - [Defensive-momentum decision ledger](paper/defensive_momentum_decisions.jsonl)
 
@@ -186,7 +189,7 @@ Artifacts:
 Current local verification:
 
 ```text
-215 passed; 88.52% coverage
+217 passed; 88.58% coverage
 ```
 
 GitHub Actions runs formatting, linting, scoped static typing, strict documentation builds, dependency auditing, coverage, and the complete test suite across Python 3.11, 3.12, and 3.13.
@@ -220,7 +223,7 @@ These charts are generated from the package with `python examples/generate_resum
 
 ## Resume Summary
 
-Built a 215-test Python quant-finance research platform centered on a real-data queue-aware market-making study with event-level ingestion, reconstruction, chronological evaluation, latency/queue/fee sensitivity, immutable experiment provenance, independent PnL reconciliation, and five-policy comparison; supported by three real-data allocation studies, two prospective hash-chained paper strategies, and derivatives, portfolio, risk, credit, statistical-arbitrage, RL, and systemic-risk modules.
+Built a 217-test Python quant-finance research platform centered on a real-data queue-aware market-making study with event-level ingestion, reconstruction, chronological evaluation, latency/queue/fee sensitivity, immutable experiment provenance, independent PnL reconciliation, and five-policy comparison; supported by three real-data allocation studies, two prospective hash-chained paper strategies, and derivatives, portfolio, risk, credit, statistical-arbitrage, RL, and systemic-risk modules.
 
 ## Limitations and Next Extensions
 

@@ -33,6 +33,20 @@ The best monthly-only row uses 252-session momentum, a 200-session trend filter,
 
 The monthly configuration is a research lead, not verified 20% profitability. Its honest evidence gate is a separately versioned prospective decision ledger with no parameter changes after future returns arrive.
 
+## Frozen-Lead Robustness
+
+The frozen monthly row was subsequently stressed without changing its parameters:
+
+- Full 2005–2026 CAGR: 20.73% at the baseline 10 bps turnover cost.
+- Full CAGR at 25 bps turnover cost: 19.50%.
+- Rolling five-year windows at or above 20% CAGR: 40.39%.
+- Worst rolling five-year CAGR: -2.19%; median: 17.37%.
+- Calendar years at or above 20%: 13 of 22; negative years: 3.
+- Moving-block bootstrap probability of at least 20% CAGR: 55.70%.
+- Original monthly subfamily rows clearing 20% in both evaluation and full periods: 19 of 72.
+
+The point estimate is real, but the threshold is marginal rather than persistent. See `reports/defensive_momentum_robustness.md`.
+
 ## Conclusion
 
 Defensive assets do not make the broad momentum family robust to selection and execution assumptions. The experiment adds a plausible lower-leverage candidate for future testing, but it does not complete the 20% objective.

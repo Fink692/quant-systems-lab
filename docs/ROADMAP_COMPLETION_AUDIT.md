@@ -50,7 +50,7 @@ This audit maps the requested improvement program to authoritative repository ev
 
 ## 4. Software Engineering
 
-Ruff, Black, scoped MyPy, an 85% coverage floor, Python 3.11–3.13 CI, dependency auditing, pre-commit, strict documentation builds, and deterministic benchmark regression are complete. Local evidence: 215 tests pass at 88.52% coverage, dependency requirements are consistent, and the installed environment has no known audited vulnerabilities.
+Ruff, Black, scoped MyPy, an 85% coverage floor, Python 3.11–3.13 CI, dependency auditing, pre-commit, strict documentation builds, and deterministic benchmark regression are complete. Local evidence: 217 tests pass at 88.58% coverage, dependency requirements are consistent, and the installed environment has no known audited vulnerabilities.
 
 ## 5. Demonstration Layer
 

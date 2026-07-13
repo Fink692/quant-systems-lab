@@ -4,6 +4,8 @@
 
 This protocol prospectively evaluates the exploratory monthly row from the defensive-momentum study. The historical monthly result was inspected after the broader frequency grid, so it is not validated evidence. Freezing it now prevents future parameter changes from being mistaken for a clean test.
 
+The historical robustness audit is also deliberately attached to this protocol: only 40.39% of rolling five-year windows and 55.70% of moving-block bootstrap samples clear 20% CAGR, while 25 bps turnover cost lowers full-sample CAGR below 20%. Forward observation is justified as a test, not as confirmation.
+
 This is paper research. It does not submit orders or recommend leverage.
 
 ## Frozen Model

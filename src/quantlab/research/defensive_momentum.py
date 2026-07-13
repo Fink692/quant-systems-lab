@@ -315,6 +315,18 @@ class DefensiveMomentumResult:
         return bool(self.period_metrics.loc["evaluation", "cagr"] >= self.config.target_cagr)
 
 
+@dataclass(frozen=True)
+class FrozenMonthlyRobustnessResult:
+    baseline_metrics: pd.Series
+    calendar_returns: pd.Series
+    rolling_five_year_cagr: pd.Series
+    consistency: pd.Series
+    cost_sensitivity: pd.DataFrame
+    drag_sensitivity: pd.DataFrame
+    bootstrap: pd.Series
+    monthly_grid_summary: pd.Series
+
+
 def load_defensive_momentum_csv(path: str | Path) -> pd.DataFrame:
     frame = pd.read_csv(path, parse_dates=["date"])
     required = {"date", "dff"} | {f"{asset}_{field}" for asset in ASSETS for field in ("open", "close")}
@@ -404,6 +416,91 @@ def run_defensive_momentum_study(
         pd.DataFrame(period_rows).set_index("period"),
         pd.DataFrame(cost_rows),
         cfg,
+    )
+
+
+def run_frozen_monthly_robustness(
+    inputs: pd.DataFrame,
+    config: DefensiveMomentumConfig | None = None,
+    bootstrap_samples: int = 2_000,
+    block_size: int = 21,
+    seed: int = 20_260_713,
+) -> FrozenMonthlyRobustnessResult:
+    cfg = DefensiveMomentumConfig() if config is None else config
+    cfg.validate()
+    if bootstrap_samples <= 0 or block_size <= 1:
+        raise ValueError("bootstrap samples and block size must be positive")
+    parameters = (252, 200, 0.25, 1.5, "monthly")
+    history = _run_candidate(inputs, cfg, *parameters).loc[cfg.development_start :]
+    returns = history["strategy_return"].dropna()
+    baseline = pd.Series(_metrics(history))
+    calendar = returns.groupby(returns.index.year).apply(lambda values: float((1.0 + values).prod() - 1.0))
+    calendar.index.name = "year"
+    rolling_window = 1_260
+    rolling = (1.0 + returns).rolling(rolling_window).apply(np.prod, raw=True) ** (252.0 / rolling_window) - 1.0
+    rolling = rolling.dropna().rename("rolling_five_year_cagr")
+    consistency = pd.Series(
+        {
+            "calendar_years": float(len(calendar)),
+            "calendar_years_at_or_above_target": float((calendar >= cfg.target_cagr).sum()),
+            "negative_calendar_years": float((calendar < 0.0).sum()),
+            "rolling_windows": float(len(rolling)),
+            "rolling_windows_at_or_above_target_fraction": float((rolling >= cfg.target_cagr).mean()),
+            "worst_rolling_five_year_cagr": float(rolling.min()),
+            "median_rolling_five_year_cagr": float(rolling.median()),
+        }
+    )
+    cost_rows = []
+    for cost_bps in (5.0, 10.0, 25.0, 50.0, 100.0):
+        scenario_cfg = DefensiveMomentumConfig(**{**cfg.__dict__, "transaction_cost_bps": cost_bps})
+        scenario = _run_candidate(inputs, scenario_cfg, *parameters).loc[cfg.development_start :]
+        cost_rows.append({"cost_bps": cost_bps, **_metrics(scenario)})
+    drag_rows = []
+    for annual_drag in (0.005, 0.01, 0.02, 0.04):
+        scenario_cfg = DefensiveMomentumConfig(**{**cfg.__dict__, "annual_excess_leverage_drag": annual_drag})
+        scenario = _run_candidate(inputs, scenario_cfg, *parameters).loc[cfg.development_start :]
+        drag_rows.append({"annual_excess_leverage_drag": annual_drag, **_metrics(scenario)})
+
+    values = returns.to_numpy()
+    starts = np.arange(len(values) - block_size + 1)
+    rng = np.random.default_rng(seed)
+    bootstrap_cagr = np.empty(bootstrap_samples)
+    blocks_needed = int(np.ceil(len(values) / block_size))
+    for sample_index in range(bootstrap_samples):
+        sampled_starts = rng.choice(starts, size=blocks_needed, replace=True)
+        sample = np.concatenate([values[start : start + block_size] for start in sampled_starts])[: len(values)]
+        bootstrap_cagr[sample_index] = float(np.prod(1.0 + sample) ** (252.0 / len(sample)) - 1.0)
+    bootstrap = pd.Series(
+        {
+            "samples": float(bootstrap_samples),
+            "block_size": float(block_size),
+            "cagr_5th_percentile": float(np.quantile(bootstrap_cagr, 0.05)),
+            "cagr_median": float(np.quantile(bootstrap_cagr, 0.50)),
+            "cagr_95th_percentile": float(np.quantile(bootstrap_cagr, 0.95)),
+            "probability_cagr_at_or_above_target": float((bootstrap_cagr >= cfg.target_cagr).mean()),
+        }
+    )
+    grid = run_defensive_momentum_study(inputs, cfg).grid_metrics
+    monthly = grid.loc[grid["rebalance_frequency"] == "monthly"]
+    monthly_summary = pd.Series(
+        {
+            "configurations": float(len(monthly)),
+            "evaluation_at_or_above_target": float((monthly["evaluation_cagr"] >= cfg.target_cagr).sum()),
+            "full_at_or_above_target": float((monthly["full_cagr"] >= cfg.target_cagr).sum()),
+            "both_at_or_above_target": float(
+                ((monthly["evaluation_cagr"] >= cfg.target_cagr) & (monthly["full_cagr"] >= cfg.target_cagr)).sum()
+            ),
+        }
+    )
+    return FrozenMonthlyRobustnessResult(
+        baseline,
+        calendar,
+        rolling,
+        consistency,
+        pd.DataFrame(cost_rows),
+        pd.DataFrame(drag_rows),
+        bootstrap,
+        monthly_summary,
     )
 
 
