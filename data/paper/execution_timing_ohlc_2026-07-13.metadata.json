@@ -1,0 +1,15 @@
+{
+  "as_of_session": "2026-07-13",
+  "fields": [
+    "tqqq_open",
+    "tqqq_close",
+    "bil_open",
+    "bil_close"
+  ],
+  "independent_tqqq_close": 72.64,
+  "retrieved_utc": "2026-07-13T21:18:34.050659+00:00",
+  "rows": 4128,
+  "sha256": "0e78e3ef50a15ceecb10f076356bc68ec198a168c4bc12733556432bda3388fc",
+  "source": "Yahoo Finance OHLC adjusted by Yahoo adjusted-close factor",
+  "source_difference_bps": 8.402416873387608e-05
+}

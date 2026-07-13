@@ -1,5 +1,11 @@
 """Research workflows for real-data strategy studies."""
 
+from quantlab.research.execution_timing import (
+    ExecutionTimingConfig,
+    ExecutionTimingResult,
+    load_adjusted_ohlc_csv,
+    run_execution_timing_audit,
+)
 from quantlab.research.experiment_config import (
     CostModel,
     DatasetReference,
@@ -32,7 +38,10 @@ from quantlab.research.market_making_study import (
 from quantlab.research.paper_trading import (
     FrozenPaperConfig,
     append_paper_decision,
+    append_paper_outcome,
     compute_paper_decision,
+    compute_paper_outcome,
+    verify_outcome_ledger,
     verify_paper_ledger,
 )
 from quantlab.research.registry import register_experiment
@@ -50,6 +59,8 @@ __all__ = [
     "DatasetReference",
     "EvaluationSettings",
     "ExecutionSettings",
+    "ExecutionTimingConfig",
+    "ExecutionTimingResult",
     "FrozenPaperConfig",
     "MarketMakingExperimentConfig",
     "MarketMakingStudyResult",
@@ -64,18 +75,23 @@ __all__ = [
     "ValuationRegimeConfig",
     "ValuationRegimeResult",
     "load_leveraged_etf_csv",
+    "load_adjusted_ohlc_csv",
     "load_qqq_fred_csv",
     "load_shiller_sp500_csv",
     "load_market_making_experiment_config",
     "calibrate_market_data",
     "append_paper_decision",
+    "append_paper_outcome",
     "chronological_split",
     "chronological_split_from_config",
     "compute_paper_decision",
+    "compute_paper_outcome",
     "register_experiment",
     "run_market_making_study",
     "run_leveraged_trend_study",
     "run_leveraged_trend_stress",
+    "run_execution_timing_audit",
     "run_valuation_regime_walk_forward",
     "verify_paper_ledger",
+    "verify_outcome_ledger",
 ]

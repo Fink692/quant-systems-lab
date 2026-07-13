@@ -12,7 +12,7 @@ The flagship pipeline ingests real NASDAQ-derived order-book messages, validates
 - Uses immutable experiment configurations, dataset hashes, append-only run records, chronological splits, and accounting invariants.
 - Preserves negative results: all five policies lose money on the public sample, and the repository explicitly avoids presenting one session as persistent alpha.
 - Includes deterministic synthetic workflows for model correctness plus real order-book, S&P 500, and leveraged-ETF research paths.
-- Ships with 204 tests, 88.66% measured coverage with an 85% CI floor, Python 3.11-3.13 CI, Ruff, Black, MyPy, dependency auditing, pre-commit, documentation builds, and benchmark regression checks.
+- Ships with 207 tests, 88.58% measured coverage with an 85% CI floor, Python 3.11-3.13 CI, Ruff, Black, MyPy, dependency auditing, pre-commit, documentation builds, and benchmark regression checks.
 
 ## Flagship Result: Real-Data Market Making
 
@@ -155,9 +155,13 @@ Historical parameters are now frozen as `leveraged-trend-v1`. The append-only le
 
 The genesis record was created after the July 13, 2026 close for the July 14 session: **33.9413% TQQQ and 66.0587% BIL**. This is the beginning of prospective evidence, not a profitability claim.
 
+An execution-timing audit now applies each completed-close signal at the next open. The old weight earns the overnight move, the new weight earns the intraday move, and 10 bps times turnover is charged at the open. On the 2021 through July 13, 2026 holdout this convention produced **25.53% CAGR**, **0.96 Sharpe**, and **23.06% maximum drawdown**. The separate outcome scorer will append the July 14 result only after that session has completed.
+
 - [Paper-trading protocol](docs/PAPER_TRADING_PROTOCOL.md)
 - [Decision ledger](paper/leveraged_trend_decisions.jsonl)
 - [Genesis input metadata](data/paper/leveraged_trend_inputs_2026-07-13.metadata.json)
+- [Execution-timing audit](reports/leveraged_trend_execution_timing.md)
+- [Adjusted OHLC metadata](data/paper/execution_timing_ohlc_2026-07-13.metadata.json)
 
 Artifacts:
 
@@ -172,7 +176,7 @@ Artifacts:
 Current local verification:
 
 ```text
-204 passed; 88.66% coverage
+207 passed; 88.58% coverage
 ```
 
 GitHub Actions runs formatting, linting, scoped static typing, strict documentation builds, dependency auditing, coverage, and the complete test suite across Python 3.11, 3.12, and 3.13.
@@ -206,7 +210,7 @@ These charts are generated from the package with `python examples/generate_resum
 
 ## Resume Summary
 
-Built a 204-test Python quant-finance research platform centered on a real-data queue-aware market-making study with event-level ingestion, reconstruction, chronological evaluation, latency/queue/fee sensitivity, immutable experiment provenance, independent PnL reconciliation, and five-policy comparison; supported by two real-data allocation studies, prospective hash-chained paper decisions, and derivatives, portfolio, risk, credit, statistical-arbitrage, RL, and systemic-risk modules.
+Built a 207-test Python quant-finance research platform centered on a real-data queue-aware market-making study with event-level ingestion, reconstruction, chronological evaluation, latency/queue/fee sensitivity, immutable experiment provenance, independent PnL reconciliation, and five-policy comparison; supported by two real-data allocation studies, prospective hash-chained paper decisions and outcomes, and derivatives, portfolio, risk, credit, statistical-arbitrage, RL, and systemic-risk modules.
 
 ## Limitations and Next Extensions
 

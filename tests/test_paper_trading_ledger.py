@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import copy
+import hashlib
 import json
 from pathlib import Path
 
@@ -10,8 +11,11 @@ import pytest
 from quantlab.research.paper_trading import (
     FrozenPaperConfig,
     append_paper_decision,
+    append_paper_outcome,
     canonical_file_sha256,
     compute_paper_decision,
+    compute_paper_outcome,
+    verify_outcome_ledger,
     verify_paper_ledger,
     write_immutable_text,
 )
@@ -75,3 +79,47 @@ def test_ledger_rejects_duplicate_and_tampering(tmp_path):
     write_immutable_text(evidence, "date,value\r\n2026-07-13,1\r\n")
     with pytest.raises(ValueError, match="refusing to overwrite"):
         write_immutable_text(evidence, "date,value\n2026-07-13,2\n")
+
+
+def test_paper_outcome_links_decision_and_charges_next_open_turnover(tmp_path):
+    decision = verify_paper_ledger(LEDGER)[0]
+    bar = {
+        "session": "2026-07-14",
+        "tqqq_open": 70.0,
+        "tqqq_close": 71.0,
+        "bil_open": 91.5,
+        "bil_close": 91.51,
+        "source": "test completed OHLC",
+    }
+    outcome = compute_paper_outcome(decision, bar, "2026-07-14T21:00:00+00:00", total_cost_bps=10.0)
+    weight = decision["target_tqqq_exposure"]
+    expected_intraday = weight * (71.0 / 70.0 - 1.0) + (1.0 - weight) * (91.51 / 91.5 - 1.0)
+    assert outcome["overnight_return"] == 0.0
+    assert outcome["turnover"] == weight
+    assert outcome["net_return"] == pytest.approx(expected_intraday - weight * 0.001)
+    assert outcome["decision_hash"] == decision["record_hash"]
+
+    path = tmp_path / "outcomes.jsonl"
+    decisions = [decision]
+    append_paper_outcome(path, outcome, decisions)
+    assert verify_outcome_ledger(path, decisions) == [outcome]
+    with pytest.raises(ValueError, match="duplicate or older"):
+        append_paper_outcome(path, outcome, decisions)
+
+    tampered = copy.deepcopy(outcome)
+    tampered["net_return"] = 1.0
+    path.write_text(json.dumps(tampered) + "\n", encoding="utf-8")
+    with pytest.raises(ValueError, match="outcome hash mismatch"):
+        verify_outcome_ledger(path, decisions)
+
+    tampered["outcome_hash"] = hashlib.sha256(
+        json.dumps(
+            {key: value for key, value in tampered.items() if key != "outcome_hash"},
+            sort_keys=True,
+            separators=(",", ":"),
+            allow_nan=False,
+        ).encode("utf-8")
+    ).hexdigest()
+    path.write_text(json.dumps(tampered) + "\n", encoding="utf-8")
+    with pytest.raises(ValueError, match="net_return calculation is invalid"):
+        verify_outcome_ledger(path, decisions)

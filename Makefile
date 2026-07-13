@@ -1,4 +1,4 @@
-.PHONY: install test quality docs audit fetch-real-data fetch-leveraged-data fetch-long-history-data reproduce-strategy reproduce-leveraged-strategy reproduce-long-history-stress record-paper-decision fetch-order-book-data reproduce-market-making-sample market-making-dashboard market-making-notebook market-making-paper market-making-video demo-report resume-artifacts
+.PHONY: install test quality docs audit fetch-real-data fetch-leveraged-data fetch-long-history-data fetch-execution-ohlc reproduce-strategy reproduce-leveraged-strategy reproduce-long-history-stress reproduce-execution-audit record-paper-decision score-paper-outcome fetch-order-book-data reproduce-market-making-sample market-making-dashboard market-making-notebook market-making-paper market-making-video demo-report resume-artifacts
 
 install:
 	python -m pip install -e ".[dev]"
@@ -55,6 +55,15 @@ reproduce-long-history-stress:
 
 record-paper-decision:
 	python examples/record_leveraged_trend_paper.py --snapshot "$(SNAPSHOT)" --metadata "$(METADATA)" --ledger paper/leveraged_trend_decisions.jsonl --effective-session "$(EFFECTIVE_SESSION)" --config config/leveraged_trend_paper.json
+
+fetch-execution-ohlc:
+	python examples/fetch_leveraged_etf_ohlc.py --output data/paper/execution_timing_ohlc_2026-07-13.csv --metadata data/paper/execution_timing_ohlc_2026-07-13.metadata.json
+
+reproduce-execution-audit:
+	python examples/run_execution_timing_audit.py --data data/paper/execution_timing_ohlc_2026-07-13.csv --output reports/leveraged_trend_execution_timing.md
+
+score-paper-outcome:
+	python examples/score_leveraged_trend_paper.py --decisions paper/leveraged_trend_decisions.jsonl --outcomes paper/leveraged_trend_outcomes.jsonl --total-cost-bps 10
 
 demo-report:
 	quantlab demo-report --seed 7 --output examples/demo_report_seed7.md

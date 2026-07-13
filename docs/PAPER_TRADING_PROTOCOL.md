@@ -14,6 +14,8 @@ This is paper research. It does not submit orders or recommend that capital be t
 - Risk rule: 30% target annualized volatility using the prior 21 completed returns.
 - Exposure bounds: 0% to 100% TQQQ; residual exposure in BIL.
 - Timing: a completed-session signal becomes effective no earlier than the following market session.
+- Execution: the target changes at the effective session's open; the prior target earns any intervening overnight return.
+- Cost: 10 bps times absolute TQQQ-weight turnover, charged at the effective open.
 - Configuration: `config/leveraged_trend_paper.json`, whose canonical hash is stored in every decision.
 
 Changing any field creates a new strategy identifier. Past records are never rewritten.
@@ -44,6 +46,8 @@ Each JSONL record includes:
 
 The ledger validator recomputes every hash, verifies the chain, and requires strictly increasing as-of sessions. Duplicate, older, altered, or detached records are rejected.
 
+Completed outcomes are stored in a separate hash-chained ledger. Validation links every outcome to its frozen decision and recomputes exposure, overnight and intraday return, turnover, cost, and net return from the recorded adjusted OHLC values. A rehashed but mathematically inconsistent outcome is rejected.
+
 ## First Decision
 
 The genesis record was created at `2026-07-13T21:02:30.793027+00:00`, after Nasdaq reported the July 13 completed close and before the July 14 session:
@@ -71,6 +75,23 @@ python examples/record_leveraged_trend_paper.py `
 ```
 
 The effective session is explicit rather than guessed by a simplified holiday calendar.
+
+## Outcome Scoring
+
+After the effective session has a unique completed Nasdaq historical row, score the oldest pending decision:
+
+```powershell
+python examples/score_leveraged_trend_paper.py `
+  --decisions paper/leveraged_trend_decisions.jsonl `
+  --outcomes paper/leveraged_trend_outcomes.jsonl `
+  --total-cost-bps 10
+```
+
+The genesis outcome begins in cash immediately before the effective open, so it has no pre-entry overnight return. Later outcomes hold the previous target from its recorded close to the new effective open, switch to the new target at that open, then earn the new target's intraday return. The scorer refuses missing, duplicate, future, or unlinked sessions. As of July 13, 2026, the July 14 genesis outcome does not yet exist and must not be inferred.
+
+## Execution-Timing Audit
+
+The frozen historical strategy was recomputed using executable next-open timing and adjusted TQQQ/BIL OHLC through July 13, 2026. On the untouched 2021 onward holdout, next-open CAGR was **25.53%**, Sharpe was **0.96**, and maximum drawdown was **23.06%** after the same 10 bps turnover cost. The corresponding close-to-close CAGR was 22.84%. See `reports/leveraged_trend_execution_timing.md` and its checksum-tracked input snapshot in `data/paper/`.
 
 ## Evaluation Gate
 

@@ -131,6 +131,124 @@ def append_paper_decision(path: str | Path, record: dict[str, Any]) -> None:
         handle.write(json.dumps(record, sort_keys=True, separators=(",", ":")) + "\n")
 
 
+def compute_paper_outcome(
+    decision: dict[str, Any],
+    completed_bar: dict[str, float | str],
+    scored_utc: str,
+    previous_outcome: dict[str, Any] | None = None,
+    total_cost_bps: float = 10.0,
+) -> dict[str, Any]:
+    if completed_bar.get("session") != decision.get("effective_session"):
+        raise ValueError("completed bar must match the decision effective session")
+    if total_cost_bps < 0:
+        raise ValueError("total_cost_bps must be non-negative")
+    required = ("tqqq_open", "tqqq_close", "bil_open", "bil_close")
+    prices = {field: float(completed_bar[field]) for field in required}
+    if min(prices.values()) <= 0:
+        raise ValueError("completed OHLC prices must be positive")
+
+    new_weight = float(decision["target_tqqq_exposure"])
+    if not 0.0 <= new_weight <= 1.0:
+        raise ValueError("decision exposure must be in [0, 1]")
+    if previous_outcome is None:
+        old_weight = 0.0
+        overnight_return = 0.0
+        previous_hash = "GENESIS"
+    else:
+        old_weight = float(previous_outcome["target_tqqq_exposure"])
+        previous_tqqq_close = float(previous_outcome["tqqq_close"])
+        previous_bil_close = float(previous_outcome["bil_close"])
+        overnight_return = old_weight * (prices["tqqq_open"] / previous_tqqq_close - 1.0) + (1.0 - old_weight) * (
+            prices["bil_open"] / previous_bil_close - 1.0
+        )
+        previous_hash = str(previous_outcome["outcome_hash"])
+    intraday_return = new_weight * (prices["tqqq_close"] / prices["tqqq_open"] - 1.0) + (1.0 - new_weight) * (
+        prices["bil_close"] / prices["bil_open"] - 1.0
+    )
+    turnover = abs(new_weight - old_weight)
+    trading_cost = turnover * total_cost_bps / 10_000.0
+    gross_return = (1.0 + overnight_return) * (1.0 + intraday_return) - 1.0
+
+    outcome: dict[str, Any] = {
+        "schema_version": 1,
+        "strategy_id": decision["strategy_id"],
+        "decision_hash": decision["record_hash"],
+        "scored_utc": scored_utc,
+        "effective_session": decision["effective_session"],
+        "target_tqqq_exposure": new_weight,
+        "target_bil_exposure": 1.0 - new_weight,
+        **prices,
+        "overnight_return": float(overnight_return),
+        "intraday_return": float(intraday_return),
+        "gross_return": float(gross_return),
+        "turnover": float(turnover),
+        "total_cost_bps": float(total_cost_bps),
+        "trading_cost": float(trading_cost),
+        "net_return": float(gross_return - trading_cost),
+        "source": str(completed_bar.get("source", "Nasdaq.com historical OHLC")),
+        "previous_outcome_hash": previous_hash,
+    }
+    outcome["outcome_hash"] = _record_hash(outcome)
+    return outcome
+
+
+def verify_outcome_ledger(
+    path: str | Path,
+    decisions: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    outcome_path = Path(path)
+    if not outcome_path.exists():
+        return []
+    decision_by_hash = {record["record_hash"]: record for record in decisions}
+    outcomes = [json.loads(line) for line in outcome_path.read_text(encoding="utf-8").splitlines() if line.strip()]
+    previous = "GENESIS"
+    previous_outcome: dict[str, Any] | None = None
+    previous_session: pd.Timestamp | None = None
+    for outcome in outcomes:
+        claimed = outcome.get("outcome_hash")
+        payload = {key: value for key, value in outcome.items() if key != "outcome_hash"}
+        if claimed != _record_hash(payload):
+            raise ValueError("paper outcome hash mismatch")
+        if outcome.get("previous_outcome_hash") != previous:
+            raise ValueError("paper outcome chain is broken")
+        decision = decision_by_hash.get(outcome.get("decision_hash"))
+        if decision is None or decision["effective_session"] != outcome.get("effective_session"):
+            raise ValueError("paper outcome is not linked to a matching decision")
+        _validate_outcome_calculation(outcome, decision, previous_outcome)
+        session = pd.Timestamp(outcome["effective_session"])
+        if previous_session is not None and session <= previous_session:
+            raise ValueError("paper outcome sessions must increase strictly")
+        previous = str(claimed)
+        previous_outcome = outcome
+        previous_session = session
+    return outcomes
+
+
+def append_paper_outcome(
+    path: str | Path,
+    outcome: dict[str, Any],
+    decisions: list[dict[str, Any]],
+) -> None:
+    outcome_path = Path(path)
+    outcomes = verify_outcome_ledger(outcome_path, decisions)
+    if outcomes and pd.Timestamp(outcome["effective_session"]) <= pd.Timestamp(outcomes[-1]["effective_session"]):
+        raise ValueError("cannot append a duplicate or older paper outcome")
+    expected_previous = outcomes[-1]["outcome_hash"] if outcomes else "GENESIS"
+    if outcome.get("previous_outcome_hash") != expected_previous:
+        raise ValueError("new outcome does not extend the current outcome head")
+    payload = {key: value for key, value in outcome.items() if key != "outcome_hash"}
+    if outcome.get("outcome_hash") != _record_hash(payload):
+        raise ValueError("new outcome hash is invalid")
+    decision_hashes = {decision["record_hash"] for decision in decisions}
+    if outcome.get("decision_hash") not in decision_hashes:
+        raise ValueError("new outcome has no matching decision")
+    decision = next(decision for decision in decisions if decision["record_hash"] == outcome["decision_hash"])
+    _validate_outcome_calculation(outcome, decision, outcomes[-1] if outcomes else None)
+    outcome_path.parent.mkdir(parents=True, exist_ok=True)
+    with outcome_path.open("a", encoding="utf-8", newline="\n") as handle:
+        handle.write(json.dumps(outcome, sort_keys=True, separators=(",", ":")) + "\n")
+
+
 def canonical_file_sha256(path: str | Path) -> str:
     text = Path(path).read_text(encoding="utf-8").replace("\r\n", "\n")
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
@@ -150,6 +268,52 @@ def write_immutable_text(path: str | Path, content: str) -> None:
 
 def _record_hash(record: dict[str, Any]) -> str:
     return _sha256_json(record)
+
+
+def _validate_outcome_calculation(
+    outcome: dict[str, Any],
+    decision: dict[str, Any],
+    previous_outcome: dict[str, Any] | None,
+) -> None:
+    new_weight = float(decision["target_tqqq_exposure"])
+    if outcome.get("strategy_id") != decision.get("strategy_id"):
+        raise ValueError("paper outcome strategy does not match its decision")
+    if not np.isclose(float(outcome["target_tqqq_exposure"]), new_weight, atol=1e-12):
+        raise ValueError("paper outcome exposure does not match its decision")
+    if not np.isclose(float(outcome["target_bil_exposure"]), 1.0 - new_weight, atol=1e-12):
+        raise ValueError("paper outcome residual exposure is invalid")
+
+    prices = {field: float(outcome[field]) for field in ("tqqq_open", "tqqq_close", "bil_open", "bil_close")}
+    if min(prices.values()) <= 0:
+        raise ValueError("paper outcome prices must be positive")
+    if previous_outcome is None:
+        old_weight = 0.0
+        expected_overnight = 0.0
+    else:
+        old_weight = float(previous_outcome["target_tqqq_exposure"])
+        expected_overnight = old_weight * (prices["tqqq_open"] / float(previous_outcome["tqqq_close"]) - 1.0) + (
+            1.0 - old_weight
+        ) * (prices["bil_open"] / float(previous_outcome["bil_close"]) - 1.0)
+    expected_intraday = new_weight * (prices["tqqq_close"] / prices["tqqq_open"] - 1.0) + (1.0 - new_weight) * (
+        prices["bil_close"] / prices["bil_open"] - 1.0
+    )
+    expected_turnover = abs(new_weight - old_weight)
+    cost_bps = float(outcome["total_cost_bps"])
+    if cost_bps < 0:
+        raise ValueError("paper outcome cost must be non-negative")
+    expected_cost = expected_turnover * cost_bps / 10_000.0
+    expected_gross = (1.0 + expected_overnight) * (1.0 + expected_intraday) - 1.0
+    expected = {
+        "overnight_return": expected_overnight,
+        "intraday_return": expected_intraday,
+        "turnover": expected_turnover,
+        "trading_cost": expected_cost,
+        "gross_return": expected_gross,
+        "net_return": expected_gross - expected_cost,
+    }
+    for field, value in expected.items():
+        if not np.isclose(float(outcome[field]), value, atol=1e-12):
+            raise ValueError(f"paper outcome {field} calculation is invalid")
 
 
 def _sha256_json(payload: dict[str, Any]) -> str:

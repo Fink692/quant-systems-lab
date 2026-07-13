@@ -61,6 +61,12 @@ The strategy clears the 20% holdout CAGR hurdle and substantially reduces drawdo
 
 Calendar returns were uneven: 42.25% in 2021, -7.87% in 2022, 44.94% in 2023, 27.16% in 2024, 15.94% in 2025, and 12.88% for partial-year 2026. Therefore, “23.29% CAGR” must not be restated as “at least 20% every year.”
 
+## Executable Timing Audit
+
+The initial study shifts completed-close signals by one session but applies the resulting weight to close-to-close returns. A separate audit removes the implicit same-close execution ambiguity: the old allocation earns close-to-next-open return, the new allocation begins at the next open, and 10 bps times turnover is charged there. Adjusted TQQQ/BIL OHLC are frozen through July 13, 2026 and the final TQQQ close is independently reconciled to Nasdaq.
+
+On the January 2021 onward holdout, this next-open convention produces **25.53% CAGR**, **0.96 Sharpe**, and **23.06% maximum drawdown**, versus 22.84% CAGR under close-to-close accounting over the same dates. The result survives the more explicit execution convention, but still shares the short-regime, public-data, and modeled-cost limitations described below. The reproducible table is in `reports/leveraged_trend_execution_timing.md`.
+
 ## Robustness and Uncertainty
 
 - 40 of 48 prespecified parameter combinations exceeded 20% holdout CAGR.

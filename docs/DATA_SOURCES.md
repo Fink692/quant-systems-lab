@@ -84,6 +84,15 @@ Limitations:
 
 Each dated snapshot contains exactly the data used for a prospective decision and is tied to the ledger by SHA-256. Nasdaq's completed 4:00 p.m. close is checked for TQQQ, QQQ, and BIL; a discrepancy above 5 bps prevents recording. The public Nasdaq website interface is not a contractual or licensed feed and may change, so provider failures are treated as failed recording runs rather than silently bypassed.
 
+### Adjusted OHLC Execution Snapshot
+
+- Cached file: `data/paper/execution_timing_ohlc_2026-07-13.csv`
+- Integrity metadata: `data/paper/execution_timing_ohlc_2026-07-13.metadata.json`
+- Fetch script: `examples/fetch_leveraged_etf_ohlc.py`
+- Fields: adjusted TQQQ and BIL open and close, 4,128 common sessions through July 13, 2026.
+
+Yahoo supplies raw open, raw close, and adjusted close. Adjusted open is calculated as `raw open * adjusted close / raw close`, applying the session's split/distribution adjustment factor consistently to both endpoints. The latest adjusted TQQQ close is reconciled within 5 bps to Nasdaq's explicitly completed close. These are daily endpoint proxies, not executable bid/ask quotes; the audit still models slippage rather than observing fills.
+
 ### Shiller/DataHub S&P 500 Monthly Dataset
 
 - Cached file: `data/real/shiller_sp500_monthly.csv`

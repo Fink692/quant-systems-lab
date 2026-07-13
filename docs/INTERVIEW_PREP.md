@@ -68,6 +68,10 @@ A: It produced a 23.29% CAGR on the January 2021 to July 2026 historical holdout
 
 A: The parameters are frozen under a versioned strategy ID. Each decision is timestamped for a later effective session, includes hashes of the exact configuration and source snapshot, and extends a hash-chained JSONL ledger. The recorder rejects duplicate dates, altered history, broken chains, and data-source disagreement. The first target was recorded after the July 13 close for July 14, before that return was known.
 
+### Q: Can the close signal actually be traded at that same close?
+
+A: No. The execution audit carries the old allocation overnight, changes to the frozen target at the next open, and then earns the new allocation's intraday return, with 10 bps turnover cost. The 2021 onward holdout is 25.53% CAGR with 23.06% maximum drawdown under that convention. The paper outcome ledger uses the same accounting and recomputes every result from completed OHLC.
+
 ### Factor Risk And Portfolio
 
 Q: What makes this Barra-style?
