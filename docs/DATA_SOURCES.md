@@ -34,6 +34,28 @@ Important limitations:
 
 The sample is appropriate for validating ingestion, reconstruction, chronology, replay, accounting, and reporting. A flagship paper still requires licensed multi-session L2 or L3 data and true receive-time semantics.
 
+### Yahoo Finance Leveraged-ETF Daily Dataset
+
+- Cached file: `data/real/leveraged_etf_adjusted.csv`
+- Integrity metadata: `data/real/leveraged_etf_adjusted.metadata.json`
+- Fetch script: `examples/fetch_leveraged_etf_data.py`
+- Upstream endpoint: Yahoo Finance chart API, requested separately for TQQQ, QQQ, and BIL.
+- Adjusted-close definition: <https://help.yahoo.com/kb/SLN28256.html>
+- Historical-data help: <https://in.help.yahoo.com/kb/finance/download-historical-data-yahoo-finance-sln2311.html>
+- TQQQ fund objective and leverage warning: <https://www.proshares.com/our-etfs/leveraged-and-inverse/tqqq>
+- Local sample window: February 11, 2010 through July 10, 2026.
+
+The study retains adjusted closes for TQQQ, QQQ, and BIL on their common trading dates. Yahoo documents adjusted close as accounting for applicable splits and dividend distributions. The fetch drops missing rows, sorts and deduplicates timestamps, excludes the current UTC date to avoid incomplete daily bars, and writes a SHA-256 checksum of the canonical LF-delimited CSV with the snapshot metadata.
+
+Limitations:
+
+- Yahoo Finance is a free public source, not a point-in-time institutional database or execution feed.
+- Adjusted closes do not provide bid/ask quotes, intraday market impact, or the investor's actual fill price.
+- TQQQ began in 2010, so its live history excludes the dot-com crash and 2008 financial crisis.
+- TQQQ targets three times the Nasdaq-100's daily return before fees and expenses; multi-day returns can diverge substantially from three times the index return.
+- Reproduction should retain the committed snapshot for exact results and use the fetch command only for a deliberately updated experiment.
+- Users should review the upstream provider's current data terms before redistributing refreshed snapshots.
+
 ### Shiller/DataHub S&P 500 Monthly Dataset
 
 - Cached file: `data/real/shiller_sp500_monthly.csv`

@@ -2,7 +2,7 @@
 
 ## One-Line Pitch
 
-A tested Python quant-finance platform implementing ten advanced institutional modeling systems across derivatives, market microstructure, portfolio construction, risk, credit, statistical arbitrage, and systemic contagion, plus a real-data walk-forward valuation-regime study.
+A tested Python quant-finance platform implementing ten advanced institutional modeling systems across derivatives, market microstructure, portfolio construction, risk, credit, statistical arbitrage, and systemic contagion, plus two real-data allocation studies.
 
 ## What This Demonstrates
 
@@ -11,7 +11,7 @@ A tested Python quant-finance platform implementing ten advanced institutional m
 - Machine learning for trading: tabular Q-learning, neural Q-learning, policy-gradient training, Lagrangian risk constraints, walk-forward validation, and realistic transaction-cost/drawdown penalties.
 - Institutional risk analytics: Barra-style factor decomposition, covariance shrinkage, PCA/statistical factors, macro/style/sector factors, VaR/CVaR, Kupiec/Christoffersen validation, Basel traffic-light diagnostics.
 - Portfolio engineering: robust optimization, Black-Litterman, Bayesian return shrinkage, risk parity, risk budgeting, CVaR, CDaR, turnover constraints, stress testing, and rolling backtests.
-- Real-data research: sourced S&P 500/Shiller monthly data, train/validation/test walk-forward splits, transaction costs, slippage, volatility targeting, drawdown controls, tear sheet, robustness checks, and failure analysis.
+- Real-data research: sourced monthly and daily market data, chronological train/validation/holdout splits, transaction costs, slippage, volatility targeting, tear sheets, bootstrap uncertainty, robustness checks, and failure analysis.
 - System design: package layout, CLI workflows, deterministic synthetic data, schema validation, Markdown reporting, and broad automated tests.
 
 ## Technical Differentiators
@@ -29,7 +29,7 @@ A tested Python quant-finance platform implementing ten advanced institutional m
    Synthetic data generators create controlled option chains, price panels, factor panels, credit spread curves, cointegrated assets, and financial networks so the full package can be verified anywhere.
 
 5. Real-data research evidence.
-   `src/quantlab.research.valuation_regime` runs a reproducible S&P 500 valuation-regime allocation study with lagged CAPE/PE10 signals and honest out-of-sample reporting.
+   `src/quantlab.research.valuation_regime` runs a reproducible S&P 500 valuation-regime allocation study with lagged CAPE/PE10 signals and honest out-of-sample reporting. `src/quantlab.research.leveraged_trend` adds a daily TQQQ trend study with validation-only selection, a later holdout, cost/parameter sensitivity, and block-bootstrap uncertainty.
 
 ## Evidence of Completion
 
@@ -38,17 +38,18 @@ A tested Python quant-finance platform implementing ten advanced institutional m
 - CLI: `quantlab demo-suite --seed 7`
 - Report generation: `quantlab demo-report --seed 7 --output examples/demo_report_seed7.md`
 - Real-data study: `python examples/run_valuation_regime_study.py --data data/real/shiller_sp500_monthly.csv --config config/valuation_regime.json --output reports/valuation_regime_study.md`
+- Leveraged trend study: `python examples/run_leveraged_trend_study.py --data data/real/leveraged_etf_adjusted.csv --config config/leveraged_trend.json --output reports/leveraged_trend_study.md`
 - Visual artifacts: `python examples/generate_resume_artifacts.py --seed 7`
 - Case study: `docs/CASE_STUDY_MARKET_MAKING.md`
 - Real-data-compatible workflow: `examples/run_price_panel_example.py`
-- Research memo: `docs/RESEARCH_MEMO_VALUATION_REGIME.md`
+- Research memos: `docs/RESEARCH_MEMO_VALUATION_REGIME.md` and `docs/RESEARCH_MEMO_LEVERAGED_TREND.md`
 - Hiring readiness audit: `docs/HIRING_READINESS_AUDIT.md`
-- Current local verification: `195 passed`, 88.54% coverage
+- Current local verification: `198 passed`, 88.63% coverage
 - Continuous integration: `.github/workflows/ci.yml`
 
 ## Resume Bullet
 
-Built Quant Systems Lab, a 193-test Python platform centered on a real-data queue-aware market-making study with event ingestion, reconstruction, chronological evaluation, latency/queue/fee sensitivity, immutable provenance, and independent PnL reconciliation, supported by derivatives, portfolio, risk, credit, statistical-arbitrage, RL, and systemic-risk modules.
+Built Quant Systems Lab, a 198-test Python platform centered on a real-data queue-aware market-making study with event ingestion, reconstruction, chronological evaluation, latency/queue/fee sensitivity, immutable provenance, and independent PnL reconciliation, supported by two reproducible real-data allocation studies and derivatives, portfolio, risk, credit, statistical-arbitrage, RL, and systemic-risk modules.
 
 ## Interview Talking Points
 
@@ -61,3 +62,4 @@ Built Quant Systems Lab, a 193-test Python platform centered on a real-data queu
 - How credit risk is modeled both structurally and with reduced-form intensities.
 - How network contagion, clearing, fire-sale feedback, and liquidity spirals describe different systemic-risk channels.
 - Why the real-data valuation-regime study is framed as a risk-managed allocation overlay rather than an overclaimed alpha strategy.
+- Why the leveraged trend study's 23.29% holdout CAGR is evidence for paper trading, not a promise of 20% annual returns.

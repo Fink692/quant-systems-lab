@@ -4,11 +4,11 @@ Use this as a quick prep sheet before sharing or discussing the repository.
 
 ## Project Pitch
 
-Quant Systems Lab is a tested Python platform for advanced quantitative-finance systems. It implements derivatives pricing, volatility-surface diagnostics, queue-aware market making, risk-constrained RL trading, factor risk, robust portfolio optimization, statistical arbitrage, credit/default models, systemic-risk contagion, and a real-data S&P 500 valuation-regime study in one package with CLI workflows and automated tests.
+Quant Systems Lab is a tested Python platform for advanced quantitative-finance systems. It implements derivatives pricing, volatility-surface diagnostics, queue-aware market making, risk-constrained RL trading, factor risk, robust portfolio optimization, statistical arbitrage, credit/default models, systemic-risk contagion, and two real-data allocation studies in one package with CLI workflows and automated tests.
 
 ## Best 60-Second Explanation
 
-I built a research-grade quant-finance package that covers ten major modeling families plus a real-data allocation study. The goal was not to make a black-box trading bot, but to demonstrate that I can implement the mathematical and systems pieces behind institutional quant workflows: stochastic-volatility pricing and calibration, market-microstructure simulation, constrained RL, factor risk decomposition, robust portfolio construction, credit risk, stat arb, volatility-surface arbitrage, contagion, and walk-forward research with transaction costs. The repo includes deterministic synthetic-data workflows, a real S&P 500/Shiller valuation-regime study, generated reports, Docker/Make reproducibility, and CI-tested coverage across the stack.
+I built a research-grade quant-finance package that covers ten major modeling families plus two real-data allocation studies. The goal was not to make a black-box trading bot, but to demonstrate that I can implement the mathematical and systems pieces behind institutional quant workflows: stochastic-volatility pricing and calibration, market-microstructure simulation, constrained RL, factor risk decomposition, robust portfolio construction, credit risk, stat arb, volatility-surface arbitrage, contagion, and chronological holdout research with transaction costs. The repo includes deterministic synthetic-data workflows, daily and monthly real-market studies, generated reports, Docker/Make reproducibility, and CI-tested coverage across the stack.
 
 ## High-Value Talking Points
 
@@ -59,6 +59,10 @@ A: The repo uses deterministic synthetic tests for correctness and walk-forward 
 Q: What changed when you added real data?
 
 A: I added a separate S&P 500 valuation-regime study rather than retrofitting every synthetic test. It fetches sourced monthly Shiller/DataHub data, uses lagged CAPE/PE10 signals, chooses thresholds only inside each training/validation fold, deducts costs and slippage, and reports both the good and bad news: lower beta and better risk-adjusted behavior, but lower CAGR than buy-and-hold.
+
+### Q: Did the leveraged strategy really make 20% per year?
+
+A: It produced a 23.29% CAGR on the January 2021 to July 2026 historical holdout after modeled costs. That does not mean it earned 20% every calendar year: 2022 was negative, and both 2025 and partial-year 2026 were below 20%. The result is broad across the parameter grid and survives up to 50 bps modeled turnover cost, but the block bootstrap gives only a 56.65% probability of clearing 20%. I present it as evidence worth forward-testing, not a promised return.
 
 ### Factor Risk And Portfolio
 

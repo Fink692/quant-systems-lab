@@ -1,0 +1,17 @@
+{
+  "train_end": "2016-12-31",
+  "validation_start": "2017-01-01",
+  "validation_end": "2020-12-31",
+  "holdout_start": "2021-01-01",
+  "moving_average_candidates": [100, 150, 200, 250],
+  "band_candidates": [0.0, 0.01, 0.02],
+  "target_volatility_candidates": [0.3, 0.4, 0.5, 1.0],
+  "volatility_lookback": 21,
+  "max_exposure": 1.0,
+  "transaction_cost_bps": 5.0,
+  "slippage_bps": 5.0,
+  "bootstrap_samples": 2000,
+  "bootstrap_block_days": 21,
+  "bootstrap_seed": 7,
+  "target_cagr": 0.2
+}

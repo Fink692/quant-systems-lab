@@ -10,6 +10,12 @@ from quantlab.research.experiment_config import (
     StrategySettings,
     load_market_making_experiment_config,
 )
+from quantlab.research.leveraged_trend import (
+    LeveragedTrendConfig,
+    LeveragedTrendResult,
+    load_leveraged_etf_csv,
+    run_leveraged_trend_study,
+)
 from quantlab.research.market_making_study import (
     MarketMakingStudyResult,
     calibrate_market_data,
@@ -36,10 +42,13 @@ __all__ = [
     "MarketMakingStudyResult",
     "ResearchPeriod",
     "StrategySettings",
+    "LeveragedTrendConfig",
+    "LeveragedTrendResult",
     "RobustnessResult",
     "TearSheet",
     "ValuationRegimeConfig",
     "ValuationRegimeResult",
+    "load_leveraged_etf_csv",
     "load_shiller_sp500_csv",
     "load_market_making_experiment_config",
     "calibrate_market_data",
@@ -47,5 +56,6 @@ __all__ = [
     "chronological_split_from_config",
     "register_experiment",
     "run_market_making_study",
+    "run_leveraged_trend_study",
     "run_valuation_regime_walk_forward",
 ]

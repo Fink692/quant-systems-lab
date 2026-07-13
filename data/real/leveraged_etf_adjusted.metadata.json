@@ -1,0 +1,14 @@
+{
+  "end": "2026-07-10",
+  "field": "adjusted close",
+  "retrieved_utc": "2026-07-13T20:33:55.624231+00:00",
+  "rows": 4127,
+  "sha256": "55d25e6850baf966b3626924ea8e3e0b28d06f0293d7cb78f4af6eabf1699516",
+  "source": "Yahoo Finance chart API",
+  "start": "2010-02-11",
+  "symbols": [
+    "TQQQ",
+    "QQQ",
+    "BIL"
+  ]
+}

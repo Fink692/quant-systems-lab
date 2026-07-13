@@ -1,4 +1,4 @@
-.PHONY: install test quality docs audit fetch-real-data reproduce-strategy fetch-order-book-data reproduce-market-making-sample market-making-dashboard market-making-notebook market-making-paper market-making-video demo-report resume-artifacts
+.PHONY: install test quality docs audit fetch-real-data fetch-leveraged-data reproduce-strategy reproduce-leveraged-strategy fetch-order-book-data reproduce-market-making-sample market-making-dashboard market-making-notebook market-making-paper market-making-video demo-report resume-artifacts
 
 install:
 	python -m pip install -e ".[dev]"
@@ -20,6 +20,9 @@ audit:
 fetch-real-data:
 	python examples/fetch_shiller_sp500_data.py --output data/real/shiller_sp500_monthly.csv
 
+fetch-leveraged-data:
+	python examples/fetch_leveraged_etf_data.py --output data/real/leveraged_etf_adjusted.csv --metadata data/real/leveraged_etf_adjusted.metadata.json
+
 reproduce-strategy:
 	python examples/run_valuation_regime_study.py --data data/real/shiller_sp500_monthly.csv --config config/valuation_regime.json --output reports/valuation_regime_study.md
 
@@ -40,6 +43,9 @@ market-making-paper:
 
 market-making-video:
 	python scripts/generate_market_making_demo_video.py --report-dir reports/market_making_sample --output output/video/queue_aware_market_making_demo.mp4
+
+reproduce-leveraged-strategy:
+	python examples/run_leveraged_trend_study.py --data data/real/leveraged_etf_adjusted.csv --config config/leveraged_trend.json --output reports/leveraged_trend_study.md
 
 demo-report:
 	quantlab demo-report --seed 7 --output examples/demo_report_seed7.md
