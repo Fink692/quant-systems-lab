@@ -11,6 +11,7 @@ nav:
   - Data sources: DATA_SOURCES.md
   - Valuation-regime research: RESEARCH_MEMO_VALUATION_REGIME.md
   - Leveraged-trend research: RESEARCH_MEMO_LEVERAGED_TREND.md
+  - Leveraged-trend long-history falsification: RESEARCH_MEMO_LEVERAGED_TREND_LONG_HISTORY.md
   - Assumptions and limitations: ASSUMPTIONS_AND_LIMITATIONS.md
   - Model cards: MODEL_CARDS.md
   - Roadmap completion audit: ROADMAP_COMPLETION_AUDIT.md

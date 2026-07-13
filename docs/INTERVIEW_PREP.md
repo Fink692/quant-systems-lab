@@ -62,7 +62,7 @@ A: I added a separate S&P 500 valuation-regime study rather than retrofitting ev
 
 ### Q: Did the leveraged strategy really make 20% per year?
 
-A: It produced a 23.29% CAGR on the January 2021 to July 2026 historical holdout after modeled costs. That does not mean it earned 20% every calendar year: 2022 was negative, and both 2025 and partial-year 2026 were below 20%. The result is broad across the parameter grid and survives up to 50 bps modeled turnover cost, but the block bootstrap gives only a 56.65% probability of clearing 20%. I present it as evidence worth forward-testing, not a promised return.
+A: It produced a 23.29% CAGR on the January 2021 to July 2026 historical holdout after modeled costs. It did not earn 20% every calendar year, and a reconstructed 2000-2026 history using real QQQ and FRED rates produced only 15.13%. The reconstruction correlates 0.99894 with actual TQQQ returns but is optimistic by 2.38% annually, so the long-history failure is not a conservative-data artifact. I present the recent result as regime-dependent evidence worth forward-testing, not a promised return.
 
 ### Factor Risk And Portfolio
 

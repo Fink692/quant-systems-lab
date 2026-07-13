@@ -1,0 +1,13 @@
+{
+  "evaluation_start": "2000-01-01",
+  "moving_average_days": 200,
+  "volatility_lookback": 21,
+  "target_volatility": 0.3,
+  "max_exposure": 1.0,
+  "leverage_multiple": 3.0,
+  "financing_units": 2.0,
+  "annual_fund_drag": 0.0095,
+  "transaction_cost_bps": 5.0,
+  "slippage_bps": 5.0,
+  "target_cagr": 0.2
+}

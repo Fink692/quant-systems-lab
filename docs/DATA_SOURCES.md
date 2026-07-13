@@ -56,6 +56,24 @@ Limitations:
 - Reproduction should retain the committed snapshot for exact results and use the fetch command only for a deliberately updated experiment.
 - Users should review the upstream provider's current data terms before redistributing refreshed snapshots.
 
+### QQQ/FRED Long-History Stress Inputs
+
+- Cached file: `data/real/qqq_fred_stress_daily.csv`
+- Integrity metadata: `data/real/qqq_fred_stress_daily.metadata.json`
+- Fetch script: `examples/fetch_qqq_fred_stress_data.py`
+- QQQ field: Yahoo Finance adjusted close.
+- Financing field: [Federal Funds Effective Rate, FRED DFF](https://fred.stlouisfed.org/series/DFF), percent per annum.
+- Local sample window: March 10, 1999 through July 10, 2026.
+
+The fetch aligns forward-filled calendar-day DFF observations to completed QQQ trading sessions and writes a canonical LF-delimited CSV checksum. QQQ prices are observed; any 3x pre-TQQQ returns in the stress study are derived explicitly from QQQ returns, lagged DFF financing, and stated annual drag. They are never represented as observed ETF prices.
+
+Limitations:
+
+- The reconstruction cannot reproduce every swap, rebalance, tax, tracking, or market-price effect in TQQQ.
+- Reconciliation against actual TQQQ finds 0.99894 daily-return correlation but a -2.38% annual actual-minus-synthetic mean, so the baseline reconstruction is optimistic.
+- FRED DFF is used as a financing proxy and may not equal the fund's realized institutional financing rate.
+- Yahoo data terms and the provider's current redistribution rules must be reviewed before refreshing or redistributing the snapshot.
+
 ### Shiller/DataHub S&P 500 Monthly Dataset
 
 - Cached file: `data/real/shiller_sp500_monthly.csv`

@@ -1,4 +1,4 @@
-.PHONY: install test quality docs audit fetch-real-data fetch-leveraged-data reproduce-strategy reproduce-leveraged-strategy fetch-order-book-data reproduce-market-making-sample market-making-dashboard market-making-notebook market-making-paper market-making-video demo-report resume-artifacts
+.PHONY: install test quality docs audit fetch-real-data fetch-leveraged-data fetch-long-history-data reproduce-strategy reproduce-leveraged-strategy reproduce-long-history-stress fetch-order-book-data reproduce-market-making-sample market-making-dashboard market-making-notebook market-making-paper market-making-video demo-report resume-artifacts
 
 install:
 	python -m pip install -e ".[dev]"
@@ -23,6 +23,9 @@ fetch-real-data:
 fetch-leveraged-data:
 	python examples/fetch_leveraged_etf_data.py --output data/real/leveraged_etf_adjusted.csv --metadata data/real/leveraged_etf_adjusted.metadata.json
 
+fetch-long-history-data:
+	python examples/fetch_qqq_fred_stress_data.py --output data/real/qqq_fred_stress_daily.csv --metadata data/real/qqq_fred_stress_daily.metadata.json
+
 reproduce-strategy:
 	python examples/run_valuation_regime_study.py --data data/real/shiller_sp500_monthly.csv --config config/valuation_regime.json --output reports/valuation_regime_study.md
 
@@ -46,6 +49,9 @@ market-making-video:
 
 reproduce-leveraged-strategy:
 	python examples/run_leveraged_trend_study.py --data data/real/leveraged_etf_adjusted.csv --config config/leveraged_trend.json --output reports/leveraged_trend_study.md
+
+reproduce-long-history-stress:
+	python examples/run_leveraged_trend_stress.py --data data/real/qqq_fred_stress_daily.csv --actual data/real/leveraged_etf_adjusted.csv --config config/leveraged_trend_stress.json --output reports/leveraged_trend_long_history.md
 
 demo-report:
 	quantlab demo-report --seed 7 --output examples/demo_report_seed7.md

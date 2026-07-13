@@ -12,7 +12,7 @@ The flagship pipeline ingests real NASDAQ-derived order-book messages, validates
 - Uses immutable experiment configurations, dataset hashes, append-only run records, chronological splits, and accounting invariants.
 - Preserves negative results: all five policies lose money on the public sample, and the repository explicitly avoids presenting one session as persistent alpha.
 - Includes deterministic synthetic workflows for model correctness plus real order-book, S&P 500, and leveraged-ETF research paths.
-- Ships with 198 tests, 88.63% measured coverage with an 85% CI floor, Python 3.11-3.13 CI, Ruff, Black, MyPy, dependency auditing, pre-commit, documentation builds, and benchmark regression checks.
+- Ships with 201 tests, 88.69% measured coverage with an 85% CI floor, Python 3.11-3.13 CI, Ruff, Black, MyPy, dependency auditing, pre-commit, documentation builds, and benchmark regression checks.
 
 ## Flagship Result: Real-Data Market Making
 
@@ -147,18 +147,22 @@ python examples/run_leveraged_trend_study.py --data data/real/leveraged_etf_adju
 
 The selected 200-day trend model produced a **23.29% historical holdout CAGR** after 10 bps turnover costs, with 27.62% annualized volatility and a 24.22% maximum drawdown. Forty of 48 prespecified parameter combinations exceeded 20% CAGR, but a block bootstrap estimated only a 56.65% probability of clearing that threshold. This is historical evidence, not a forecast or guaranteed annual return.
 
+The required long-history falsification does **not** clear the same hurdle. A transparent 3x reconstruction from real QQQ adjusted returns and lagged FRED financing produces only **15.13% CAGR from 2000 through July 2026**, including 3.96% during 2000-2009. It reconciles to actual TQQQ at 0.99894 daily-return correlation but is still optimistic by 2.38% annually. The 20% objective therefore remains unproven outside the recent regime.
+
 Artifacts:
 
 - [Leveraged trend research memo](docs/RESEARCH_MEMO_LEVERAGED_TREND.md)
 - [Generated leveraged trend tear sheet](reports/leveraged_trend_study.md)
 - [Price snapshot metadata](data/real/leveraged_etf_adjusted.metadata.json)
+- [Long-history falsification memo](docs/RESEARCH_MEMO_LEVERAGED_TREND_LONG_HISTORY.md)
+- [Generated long-history stress report](reports/leveraged_trend_long_history.md)
 
 ## Verification
 
 Current local verification:
 
 ```text
-198 passed; 88.63% coverage
+201 passed; 88.69% coverage
 ```
 
 GitHub Actions runs formatting, linting, scoped static typing, strict documentation builds, dependency auditing, coverage, and the complete test suite across Python 3.11, 3.12, and 3.13.
@@ -172,6 +176,7 @@ GitHub Actions runs formatting, linting, scoped static typing, strict documentat
 - [Valuation-regime tear sheet](reports/valuation_regime_study.md)
 - [Leveraged trend holdout study](docs/RESEARCH_MEMO_LEVERAGED_TREND.md)
 - [Leveraged trend tear sheet](reports/leveraged_trend_study.md)
+- [Leveraged trend long-history falsification](docs/RESEARCH_MEMO_LEVERAGED_TREND_LONG_HISTORY.md)
 - [Real-data-compatible price panel workflow](docs/REAL_DATA_WORKFLOW.md)
 - [Hiring readiness audit](docs/HIRING_READINESS_AUDIT.md)
 - [Interview prep notes](docs/INTERVIEW_PREP.md)
@@ -190,7 +195,7 @@ These charts are generated from the package with `python examples/generate_resum
 
 ## Resume Summary
 
-Built a 198-test Python quant-finance research platform centered on a real-data queue-aware market-making study with event-level ingestion, reconstruction, chronological evaluation, latency/queue/fee sensitivity, immutable experiment provenance, independent PnL reconciliation, and five-policy comparison; supported by two real-data allocation studies and derivatives, portfolio, risk, credit, statistical-arbitrage, RL, and systemic-risk modules.
+Built a 201-test Python quant-finance research platform centered on a real-data queue-aware market-making study with event-level ingestion, reconstruction, chronological evaluation, latency/queue/fee sensitivity, immutable experiment provenance, independent PnL reconciliation, and five-policy comparison; supported by two real-data allocation studies and derivatives, portfolio, risk, credit, statistical-arbitrage, RL, and systemic-risk modules.
 
 ## Limitations and Next Extensions
 
