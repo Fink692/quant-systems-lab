@@ -1,13 +1,125 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+import hashlib
+import json
+from dataclasses import asdict, dataclass
 from itertools import product
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 import pandas as pd
 
 ASSETS = ("qqq", "gld", "tlt")
+
+
+@dataclass(frozen=True)
+class FrozenDefensiveMomentumConfig:
+    strategy_id: str = "defensive-momentum-monthly-v1"
+    momentum_days: int = 252
+    trend_days: int = 200
+    volatility_days: int = 63
+    target_volatility: float = 0.25
+    max_leverage: float = 1.5
+    rebalance_frequency: str = "monthly"
+    transaction_cost_bps: float = 10.0
+    annual_excess_leverage_drag: float = 0.01
+    source_tolerance_bps: float = 5.0
+
+    def validate(self) -> None:
+        if not self.strategy_id:
+            raise ValueError("strategy_id is required")
+        if min(self.momentum_days, self.trend_days, self.volatility_days) <= 1:
+            raise ValueError("lookbacks must exceed one session")
+        if min(self.target_volatility, self.max_leverage, self.source_tolerance_bps) <= 0:
+            raise ValueError("risk and tolerance settings must be positive")
+        if self.rebalance_frequency != "monthly":
+            raise ValueError("frozen candidate must rebalance monthly")
+        if min(self.transaction_cost_bps, self.annual_excess_leverage_drag) < 0:
+            raise ValueError("cost and drag settings must be non-negative")
+
+
+def compute_defensive_momentum_decision(
+    inputs: pd.DataFrame,
+    as_of_session: str | pd.Timestamp,
+    effective_session: str | pd.Timestamp,
+    created_utc: str,
+    config: FrozenDefensiveMomentumConfig,
+    input_data_sha256: str,
+    independent_closes: dict[str, float],
+    previous_record_hash: str = "GENESIS",
+) -> dict[str, Any]:
+    config.validate()
+    as_of = pd.Timestamp(as_of_session).normalize()
+    effective = pd.Timestamp(effective_session).normalize()
+    if effective <= as_of:
+        raise ValueError("effective_session must be strictly after as_of_session")
+    data = inputs.loc[inputs.index <= as_of].copy().sort_index()
+    if data.empty or data.index[-1] != as_of:
+        raise ValueError("as_of_session must exist in completed input history")
+    required = {"dff"} | {f"{asset}_{field}" for asset in ASSETS for field in ("open", "close")}
+    missing = required - set(data.columns)
+    if missing:
+        raise ValueError(f"missing required columns: {sorted(missing)}")
+    prior_month = data.loc[data.index.to_period("M") < as_of.to_period("M")]
+    if len(prior_month) < max(config.momentum_days + 1, config.trend_days, config.volatility_days + 1):
+        raise ValueError("not enough history for the last completed month-end signal")
+    signal_session = prior_month.index[-1]
+    diagnostics: dict[str, dict[str, float | bool]] = {}
+    for asset in ASSETS:
+        close = prior_month[f"{asset}_close"]
+        signal_price = float(close.iloc[-1])
+        momentum = float(signal_price / close.iloc[-1 - config.momentum_days] - 1.0)
+        moving_average = float(close.tail(config.trend_days).mean())
+        volatility = float(close.pct_change().tail(config.volatility_days).std(ddof=1) * np.sqrt(252.0))
+        diagnostics[asset] = {
+            "signal_price": signal_price,
+            "momentum": momentum,
+            "moving_average": moving_average,
+            "realized_volatility": volatility,
+            "eligible": bool(signal_price > moving_average),
+        }
+    eligible = [asset for asset in ASSETS if bool(diagnostics[asset]["eligible"])]
+    selected_asset = max(eligible, key=lambda asset: float(diagnostics[asset]["momentum"])) if eligible else "cash"
+    selected_leverage = (
+        min(
+            config.max_leverage,
+            config.target_volatility / max(float(diagnostics[selected_asset]["realized_volatility"]), 1e-12),
+        )
+        if selected_asset != "cash"
+        else 0.0
+    )
+    target_weights = {asset: float(selected_leverage if asset == selected_asset else 0.0) for asset in ASSETS}
+    target_weights["cash"] = float(1.0 - selected_leverage)
+
+    closes = {asset: float(value) for asset, value in independent_closes.items()}
+    if set(ASSETS) - set(closes):
+        raise ValueError("independent closes must include QQQ, GLD, and TLT")
+    differences = {
+        asset: abs(float(data[f"{asset}_close"].iloc[-1]) / closes[asset] - 1.0) * 10_000.0 for asset in ASSETS
+    }
+    if max(differences.values()) > config.source_tolerance_bps:
+        raise ValueError(f"independent close difference exceeds {config.source_tolerance_bps} bps")
+    record: dict[str, Any] = {
+        "schema_version": 1,
+        "strategy_id": config.strategy_id,
+        "created_utc": created_utc,
+        "as_of_session": as_of.strftime("%Y-%m-%d"),
+        "effective_session": effective.strftime("%Y-%m-%d"),
+        "signal_session": signal_session.strftime("%Y-%m-%d"),
+        "config_sha256": _canonical_json_sha256(asdict(config)),
+        "input_data_sha256": input_data_sha256,
+        "asset_diagnostics": diagnostics,
+        "selected_asset": selected_asset,
+        "selected_leverage": float(selected_leverage),
+        "target_weights": target_weights,
+        "independent_source": "Nasdaq.com completed-session close",
+        "independent_closes": closes,
+        "source_difference_bps": differences,
+        "previous_record_hash": previous_record_hash,
+    }
+    record["record_hash"] = _canonical_json_sha256(record)
+    return record
 
 
 @dataclass(frozen=True)
@@ -211,3 +323,8 @@ def _metrics(history: pd.DataFrame) -> dict[str, float]:
         "max_drawdown": float(np.max(1.0 - equity.to_numpy() / peaks)),
         "observations": float(len(returns)),
     }
+
+
+def _canonical_json_sha256(payload: dict[str, Any]) -> str:
+    canonical = json.dumps(payload, sort_keys=True, separators=(",", ":"), allow_nan=False)
+    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()

@@ -85,6 +85,8 @@ Limitations:
 
 Adjusted open applies Yahoo's session adjustment factor, `adjusted close / raw close`, to raw open. The final completed closes are independently compared with Nasdaq.com and recording fails above 5 bps disagreement. Adjusted daily endpoints and modeled costs remain weaker than executable bid/ask quotes or broker fills.
 
+The frozen monthly candidate stores each prospective input under `data/paper/` and links it to `paper/defensive_momentum_decisions.jsonl` by SHA-256. The July 13 genesis snapshot contains 320 sessions and is sufficient to recompute the June 30 month-end signal without accessing later data.
+
 ### Forward Paper-Decision Snapshots
 
 - Snapshot directory: `data/paper/`

@@ -3,6 +3,8 @@
 from quantlab.research.defensive_momentum import (
     DefensiveMomentumConfig,
     DefensiveMomentumResult,
+    FrozenDefensiveMomentumConfig,
+    compute_defensive_momentum_decision,
     load_defensive_momentum_csv,
     run_defensive_momentum_study,
 )
@@ -69,6 +71,7 @@ __all__ = [
     "ExecutionTimingResult",
     "DefensiveMomentumConfig",
     "DefensiveMomentumResult",
+    "FrozenDefensiveMomentumConfig",
     "FrozenPaperConfig",
     "MarketMakingExperimentConfig",
     "MarketMakingStudyResult",
@@ -94,6 +97,7 @@ __all__ = [
     "chronological_split",
     "chronological_split_from_config",
     "compute_paper_decision",
+    "compute_defensive_momentum_decision",
     "compute_paper_outcome",
     "register_experiment",
     "run_market_making_study",

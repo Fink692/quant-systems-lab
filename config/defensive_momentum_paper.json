@@ -1,0 +1,12 @@
+{
+  "strategy_id": "defensive-momentum-monthly-v1",
+  "momentum_days": 252,
+  "trend_days": 200,
+  "volatility_days": 63,
+  "target_volatility": 0.25,
+  "max_leverage": 1.5,
+  "rebalance_frequency": "monthly",
+  "transaction_cost_bps": 10.0,
+  "annual_excess_leverage_drag": 0.01,
+  "source_tolerance_bps": 5.0
+}

@@ -1,0 +1,17 @@
+{
+  "as_of_session": "2026-07-13",
+  "independent_closes": {
+    "gld": 367.2,
+    "qqq": 711.74,
+    "tlt": 83.97
+  },
+  "independent_source": "Nasdaq.com completed-session closes",
+  "rows": 320,
+  "snapshot_sha256": "ec2e5d7b21ce9eeadfaee847e9c1aed6d07c0cf600478a5c21558fa6c2156f8e",
+  "source_difference_bps": {
+    "gld": 1.9061851085921955,
+    "qqq": 0.00013720775848824474,
+    "tlt": 0.00014537371972878077
+  },
+  "source_snapshot_sha256": "75b02a7a51ce735ad39282dd8bfa610ab22a0093df1153c0a2fa1b98809ddd21"
+}

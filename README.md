@@ -12,7 +12,7 @@ The flagship pipeline ingests real NASDAQ-derived order-book messages, validates
 - Uses immutable experiment configurations, dataset hashes, append-only run records, chronological splits, and accounting invariants.
 - Preserves negative results: all five policies lose money on the public sample, and the repository explicitly avoids presenting one session as persistent alpha.
 - Includes deterministic synthetic workflows for model correctness plus real order-book, S&P 500, and leveraged-ETF research paths.
-- Ships with 211 tests, 88.66% measured coverage with an 85% CI floor, Python 3.11-3.13 CI, Ruff, Black, MyPy, dependency auditing, pre-commit, documentation builds, and benchmark regression checks.
+- Ships with 214 tests, 88.63% measured coverage with an 85% CI floor, Python 3.11-3.13 CI, Ruff, Black, MyPy, dependency auditing, pre-commit, documentation builds, and benchmark regression checks.
 
 ## Flagship Result: Real-Data Market Making
 
@@ -151,6 +151,8 @@ The required long-history falsification does **not** clear the same hurdle. A tr
 
 A defensive QQQ/GLD/TLT momentum grid was also tested with adjusted next-open execution. The development-selected weekly model earns only **8.06% evaluation CAGR** and is rejected. A monthly-only row reaches 20.73% over the full 2005–2026 sample, but frequency sensitivity was discovered after evaluation inspection, so it is disclosed as an exploratory lead rather than promoted as validated alpha.
 
+That monthly lead is now frozen prospectively as `defensive-momentum-monthly-v1`. Its genesis target was recorded after the July 13 close for July 14: **105.2183% QQQ and -5.2183% financing**. The decision is hash-chained to the exact input snapshot and configuration; it is process evidence, not a return claim.
+
 ## Forward Paper Ledger
 
 Historical parameters are now frozen as `leveraged-trend-v1`. The append-only ledger records each next-session target before its return is known, hashes the exact source snapshot and configuration, chains records cryptographically, and rejects duplicate sessions or Yahoo/Nasdaq close discrepancies above 5 bps.
@@ -174,13 +176,15 @@ Artifacts:
 - [Generated long-history stress report](reports/leveraged_trend_long_history.md)
 - [Defensive-momentum research memo](docs/RESEARCH_MEMO_DEFENSIVE_MOMENTUM.md)
 - [Generated defensive-momentum report](reports/defensive_momentum_study.md)
+- [Defensive-momentum paper protocol](docs/DEFENSIVE_MOMENTUM_PAPER_PROTOCOL.md)
+- [Defensive-momentum decision ledger](paper/defensive_momentum_decisions.jsonl)
 
 ## Verification
 
 Current local verification:
 
 ```text
-211 passed; 88.66% coverage
+214 passed; 88.63% coverage
 ```
 
 GitHub Actions runs formatting, linting, scoped static typing, strict documentation builds, dependency auditing, coverage, and the complete test suite across Python 3.11, 3.12, and 3.13.
@@ -214,7 +218,7 @@ These charts are generated from the package with `python examples/generate_resum
 
 ## Resume Summary
 
-Built a 211-test Python quant-finance research platform centered on a real-data queue-aware market-making study with event-level ingestion, reconstruction, chronological evaluation, latency/queue/fee sensitivity, immutable experiment provenance, independent PnL reconciliation, and five-policy comparison; supported by three real-data allocation studies, prospective hash-chained paper decisions and outcomes, and derivatives, portfolio, risk, credit, statistical-arbitrage, RL, and systemic-risk modules.
+Built a 214-test Python quant-finance research platform centered on a real-data queue-aware market-making study with event-level ingestion, reconstruction, chronological evaluation, latency/queue/fee sensitivity, immutable experiment provenance, independent PnL reconciliation, and five-policy comparison; supported by three real-data allocation studies, two prospective hash-chained paper strategies, and derivatives, portfolio, risk, credit, statistical-arbitrage, RL, and systemic-risk modules.
 
 ## Limitations and Next Extensions
 
