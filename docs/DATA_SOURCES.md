@@ -74,6 +74,16 @@ Limitations:
 - FRED DFF is used as a financing proxy and may not equal the fund's realized institutional financing rate.
 - Yahoo data terms and the provider's current redistribution rules must be reviewed before refreshing or redistributing the snapshot.
 
+### Forward Paper-Decision Snapshots
+
+- Snapshot directory: `data/paper/`
+- Ledger: `paper/leveraged_trend_decisions.jsonl`
+- Recorder: `examples/record_leveraged_trend_paper.py`
+- Signal source: Yahoo Finance adjusted closes.
+- Independent close cross-check: Nasdaq.com ETF quote information.
+
+Each dated snapshot contains exactly the data used for a prospective decision and is tied to the ledger by SHA-256. Nasdaq's completed 4:00 p.m. close is checked for TQQQ, QQQ, and BIL; a discrepancy above 5 bps prevents recording. The public Nasdaq website interface is not a contractual or licensed feed and may change, so provider failures are treated as failed recording runs rather than silently bypassed.
+
 ### Shiller/DataHub S&P 500 Monthly Dataset
 
 - Cached file: `data/real/shiller_sp500_monthly.csv`

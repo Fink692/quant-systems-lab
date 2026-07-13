@@ -1,0 +1,8 @@
+{
+  "strategy_id": "leveraged-trend-v1",
+  "moving_average_days": 200,
+  "volatility_lookback": 21,
+  "target_volatility": 0.3,
+  "max_exposure": 1.0,
+  "source_tolerance_bps": 5.0
+}

@@ -1,0 +1,22 @@
+{
+  "as_of_session": "2026-07-13",
+  "independent_closes": {
+    "bil": 91.5,
+    "qqq": 711.74,
+    "tqqq": 72.64
+  },
+  "independent_source": "Nasdaq.com quote info secondaryData",
+  "independent_timestamps": {
+    "bil": "Closed at Jul 13, 2026 4:00 PM ET",
+    "qqq": "Closed at Jul 13, 2026 4:00 PM ET",
+    "tqqq": "Closed at Jul 13, 2026 4:00 PM ET"
+  },
+  "rows": 260,
+  "signal_source": "Yahoo Finance adjusted close",
+  "snapshot_sha256": "b50c17317c005662d5f3402ff97511d71b601154fbdb8336fa359a614555550f",
+  "source_difference_bps": {
+    "bil": 0.0,
+    "qqq": 0.00013720775848824474,
+    "tqqq": 8.402416873387608e-05
+  }
+}

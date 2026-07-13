@@ -12,7 +12,7 @@ The flagship pipeline ingests real NASDAQ-derived order-book messages, validates
 - Uses immutable experiment configurations, dataset hashes, append-only run records, chronological splits, and accounting invariants.
 - Preserves negative results: all five policies lose money on the public sample, and the repository explicitly avoids presenting one session as persistent alpha.
 - Includes deterministic synthetic workflows for model correctness plus real order-book, S&P 500, and leveraged-ETF research paths.
-- Ships with 201 tests, 88.69% measured coverage with an 85% CI floor, Python 3.11-3.13 CI, Ruff, Black, MyPy, dependency auditing, pre-commit, documentation builds, and benchmark regression checks.
+- Ships with 204 tests, 88.66% measured coverage with an 85% CI floor, Python 3.11-3.13 CI, Ruff, Black, MyPy, dependency auditing, pre-commit, documentation builds, and benchmark regression checks.
 
 ## Flagship Result: Real-Data Market Making
 
@@ -149,6 +149,16 @@ The selected 200-day trend model produced a **23.29% historical holdout CAGR** a
 
 The required long-history falsification does **not** clear the same hurdle. A transparent 3x reconstruction from real QQQ adjusted returns and lagged FRED financing produces only **15.13% CAGR from 2000 through July 2026**, including 3.96% during 2000-2009. It reconciles to actual TQQQ at 0.99894 daily-return correlation but is still optimistic by 2.38% annually. The 20% objective therefore remains unproven outside the recent regime.
 
+## Forward Paper Ledger
+
+Historical parameters are now frozen as `leveraged-trend-v1`. The append-only ledger records each next-session target before its return is known, hashes the exact source snapshot and configuration, chains records cryptographically, and rejects duplicate sessions or Yahoo/Nasdaq close discrepancies above 5 bps.
+
+The genesis record was created after the July 13, 2026 close for the July 14 session: **33.9413% TQQQ and 66.0587% BIL**. This is the beginning of prospective evidence, not a profitability claim.
+
+- [Paper-trading protocol](docs/PAPER_TRADING_PROTOCOL.md)
+- [Decision ledger](paper/leveraged_trend_decisions.jsonl)
+- [Genesis input metadata](data/paper/leveraged_trend_inputs_2026-07-13.metadata.json)
+
 Artifacts:
 
 - [Leveraged trend research memo](docs/RESEARCH_MEMO_LEVERAGED_TREND.md)
@@ -162,7 +172,7 @@ Artifacts:
 Current local verification:
 
 ```text
-201 passed; 88.69% coverage
+204 passed; 88.66% coverage
 ```
 
 GitHub Actions runs formatting, linting, scoped static typing, strict documentation builds, dependency auditing, coverage, and the complete test suite across Python 3.11, 3.12, and 3.13.
@@ -177,6 +187,7 @@ GitHub Actions runs formatting, linting, scoped static typing, strict documentat
 - [Leveraged trend holdout study](docs/RESEARCH_MEMO_LEVERAGED_TREND.md)
 - [Leveraged trend tear sheet](reports/leveraged_trend_study.md)
 - [Leveraged trend long-history falsification](docs/RESEARCH_MEMO_LEVERAGED_TREND_LONG_HISTORY.md)
+- [Frozen paper-trading protocol](docs/PAPER_TRADING_PROTOCOL.md)
 - [Real-data-compatible price panel workflow](docs/REAL_DATA_WORKFLOW.md)
 - [Hiring readiness audit](docs/HIRING_READINESS_AUDIT.md)
 - [Interview prep notes](docs/INTERVIEW_PREP.md)
@@ -195,7 +206,7 @@ These charts are generated from the package with `python examples/generate_resum
 
 ## Resume Summary
 
-Built a 201-test Python quant-finance research platform centered on a real-data queue-aware market-making study with event-level ingestion, reconstruction, chronological evaluation, latency/queue/fee sensitivity, immutable experiment provenance, independent PnL reconciliation, and five-policy comparison; supported by two real-data allocation studies and derivatives, portfolio, risk, credit, statistical-arbitrage, RL, and systemic-risk modules.
+Built a 204-test Python quant-finance research platform centered on a real-data queue-aware market-making study with event-level ingestion, reconstruction, chronological evaluation, latency/queue/fee sensitivity, immutable experiment provenance, independent PnL reconciliation, and five-policy comparison; supported by two real-data allocation studies, prospective hash-chained paper decisions, and derivatives, portfolio, risk, credit, statistical-arbitrage, RL, and systemic-risk modules.
 
 ## Limitations and Next Extensions
 

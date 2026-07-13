@@ -29,6 +29,12 @@ from quantlab.research.market_making_study import (
     chronological_split_from_config,
     run_market_making_study,
 )
+from quantlab.research.paper_trading import (
+    FrozenPaperConfig,
+    append_paper_decision,
+    compute_paper_decision,
+    verify_paper_ledger,
+)
 from quantlab.research.registry import register_experiment
 from quantlab.research.valuation_regime import (
     RobustnessResult,
@@ -44,6 +50,7 @@ __all__ = [
     "DatasetReference",
     "EvaluationSettings",
     "ExecutionSettings",
+    "FrozenPaperConfig",
     "MarketMakingExperimentConfig",
     "MarketMakingStudyResult",
     "ResearchPeriod",
@@ -61,11 +68,14 @@ __all__ = [
     "load_shiller_sp500_csv",
     "load_market_making_experiment_config",
     "calibrate_market_data",
+    "append_paper_decision",
     "chronological_split",
     "chronological_split_from_config",
+    "compute_paper_decision",
     "register_experiment",
     "run_market_making_study",
     "run_leveraged_trend_study",
     "run_leveraged_trend_stress",
     "run_valuation_regime_walk_forward",
+    "verify_paper_ledger",
 ]

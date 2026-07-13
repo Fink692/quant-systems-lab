@@ -1,4 +1,4 @@
-.PHONY: install test quality docs audit fetch-real-data fetch-leveraged-data fetch-long-history-data reproduce-strategy reproduce-leveraged-strategy reproduce-long-history-stress fetch-order-book-data reproduce-market-making-sample market-making-dashboard market-making-notebook market-making-paper market-making-video demo-report resume-artifacts
+.PHONY: install test quality docs audit fetch-real-data fetch-leveraged-data fetch-long-history-data reproduce-strategy reproduce-leveraged-strategy reproduce-long-history-stress record-paper-decision fetch-order-book-data reproduce-market-making-sample market-making-dashboard market-making-notebook market-making-paper market-making-video demo-report resume-artifacts
 
 install:
 	python -m pip install -e ".[dev]"
@@ -52,6 +52,9 @@ reproduce-leveraged-strategy:
 
 reproduce-long-history-stress:
 	python examples/run_leveraged_trend_stress.py --data data/real/qqq_fred_stress_daily.csv --actual data/real/leveraged_etf_adjusted.csv --config config/leveraged_trend_stress.json --output reports/leveraged_trend_long_history.md
+
+record-paper-decision:
+	python examples/record_leveraged_trend_paper.py --snapshot "$(SNAPSHOT)" --metadata "$(METADATA)" --ledger paper/leveraged_trend_decisions.jsonl --effective-session "$(EFFECTIVE_SESSION)" --config config/leveraged_trend_paper.json
 
 demo-report:
 	quantlab demo-report --seed 7 --output examples/demo_report_seed7.md

@@ -64,6 +64,10 @@ A: I added a separate S&P 500 valuation-regime study rather than retrofitting ev
 
 A: It produced a 23.29% CAGR on the January 2021 to July 2026 historical holdout after modeled costs. It did not earn 20% every calendar year, and a reconstructed 2000-2026 history using real QQQ and FRED rates produced only 15.13%. The reconstruction correlates 0.99894 with actual TQQQ returns but is optimistic by 2.38% annually, so the long-history failure is not a conservative-data artifact. I present the recent result as regime-dependent evidence worth forward-testing, not a promised return.
 
+### Q: How are you preventing yourself from changing the model after seeing new returns?
+
+A: The parameters are frozen under a versioned strategy ID. Each decision is timestamped for a later effective session, includes hashes of the exact configuration and source snapshot, and extends a hash-chained JSONL ledger. The recorder rejects duplicate dates, altered history, broken chains, and data-source disagreement. The first target was recorded after the July 13 close for July 14, before that return was known.
+
 ### Factor Risk And Portfolio
 
 Q: What makes this Barra-style?

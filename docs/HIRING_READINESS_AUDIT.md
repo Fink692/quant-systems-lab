@@ -13,6 +13,7 @@ This document maps the strongest hiring-signal requirements for a quant research
 | Robustness checks | The studies include cost grids, 48-parameter sensitivity, regime and stress analysis, a 2,000-sample moving-block bootstrap, and a QQQ/FRED pre-inception reconstruction spanning the dot-com and GFC regimes. |
 | Failure analysis | The memos document underperformance, losing periods, selection risk, leverage/path dependence, execution limits, and uncertainty. The long-history memo rejects the 20% persistence claim after a 15.13% full-history result and rejects a short-enabled extension with an 82.95% drawdown. |
 | Production-style reproducibility | `Makefile`, `Dockerfile`, `config/valuation_regime.json`, `pyproject.toml`, and CLI-style examples make the study reproducible from a clean environment. |
+| Prospective validation | `paper/leveraged_trend_decisions.jsonl` is an append-only, hash-chained ledger of frozen next-session targets with exact data/config hashes and independent completed-close checks. |
 | Financial correctness tests | `tests/test_valuation_regime_research.py` checks no date leakage across folds, bounded exposures, finite risk metrics, cost accounting, robustness output, and report generation. |
 | Honest scope control | The project keeps synthetic data for deterministic CI model tests and uses a separate real-data study for research evidence rather than mixing the two claims. |
 
